@@ -13,7 +13,7 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 - port reuse (apache/nginx/mysql ...)
 - interactive shell
 - upload and download file
-- supports multiple platforms(Linux/Windows/MacOS) and multiple architectures(x86/x64/arm)
+- supports multiple platforms(Linux/Windows/MacOS) and multiple architectures(x86/x64/arm/mips)
 
 > For IoT devices, you can remove port reuse feature to reduce the binary size and reduce the value of SOCKS5_MAX_CONNECTION to reduce memory usage.
 
