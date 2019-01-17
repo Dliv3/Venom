@@ -10,7 +10,7 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 - multi-level socks5 proxy
 - network topology
 - auto routing
-- port reuse
+- port reuse (apache/nginx/mysql ...)
 - interactive shell
 - upload and download file
 - supports multiple platforms(Linux/Windows/MacOS) and multiple architectures(x86/x64/arm)
@@ -25,7 +25,7 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 
 - combined with regeorg
 - multiple administrator nodes
-- support for third party plugins
+- support third party plugins
 - network traffic encryption
 - RESTful API
 - combined with meterpreter (To be discussed)
