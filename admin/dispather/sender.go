@@ -58,6 +58,7 @@ func SendSyncCmd() {
 	// fmt.Println(node.GNetworkTopology.NetworkMap)
 
 	// 创建Node结构体
+	// TODO 是否应该动态更新？目前觉得不需要，断掉的节点也可以留着，动态更新反而麻烦
 	for key, value := range node.GNetworkTopology.RouteTable {
 		if _, ok := node.Nodes[key]; !ok {
 			node.Nodes[key] = &node.Node{

@@ -96,23 +96,10 @@ func (nt *NetworkTopology) GenerateNetworkMapData() []byte {
 }
 
 func (nt *NetworkTopology) DeleteNode(node *Node) {
-	// nodeNumber := nt.NodeUUID2Number[node.HashID]
+	// 不需要刻意删除节点，因为节点是信息是动态改变的
 
-	// // 删除节点标号
-	// delete(nt.NodeNumber2UUID, nodeNumber)
-	// delete(nt.NodeUUID2Number, node.HashID)
-	// // 删除路由表
-	// delete(nt.RouteTable, node.HashID)
-	// // 删除网络拓扑
-	// delete(nt.NetworkMap, node.HashID)
-
-	// for key, _ := range nt.NetworkMap {
-	// 	for i, value := range nt.NetworkMap[key] {
-	// 		if value == node.HashID {
-	// 			nt.NetworkMap[key] = append(nt.NetworkMap[key][:i], nt.NetworkMap[key][i+1:]...)
-	// 		}
-	// 	}
-	// }
-	// // 删除节点描述
-	// delete(nt.NodeDescription, nodeNumber)
+	// 删除节点标号
+	// 删除路由表
+	// 删除网络拓扑
+	// 删除节点描述
 }
