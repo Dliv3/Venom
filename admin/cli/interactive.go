@@ -55,6 +55,7 @@ func Interactive() {
 			if !shellExit {
 				// ctrl c 处理函数
 				fmt.Println("Ctrl-C")
+				global.SigInteruptHandler()
 			} else {
 				// signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 				// 不优雅地解决一下退出问题
@@ -63,7 +64,7 @@ func Interactive() {
 		}
 	}()
 	var nodeID int
-	var nextNode *node.Node
+	var peerNode *node.Node
 	for {
 		if global.CurrentPeerNodeHashID == "" {
 			fmt.Print("(admin node)>>> ")
@@ -110,8 +111,9 @@ func Interactive() {
 				break
 			}
 			global.CurrentPeerNodeHashID = node.GNodeInfo.NodeNumber2UUID[nodeID]
-			nextNodeID := node.GNetworkTopology.RouteTable[global.CurrentPeerNodeHashID]
-			nextNode = node.Nodes[nextNodeID]
+			// nextNodeID := node.GNetworkTopology.RouteTable[global.CurrentPeerNodeHashID]
+			// nextNode = node.Nodes[nextNodeID]
+			peerNode = node.Nodes[global.CurrentPeerNodeHashID]
 		case "listen":
 			if !checkCurrentPeerNode() {
 				break
@@ -123,7 +125,7 @@ func Interactive() {
 				fmt.Println("port number error")
 				break
 			}
-			dispather.SendListenCmd(nextNode, port)
+			dispather.SendListenCmd(peerNode, port)
 		case "connect":
 			if !checkCurrentPeerNode() {
 				break
@@ -132,7 +134,7 @@ func Interactive() {
 			var port uint16
 			fmt.Scanf("%s %d", &ip, &port)
 			fmt.Println("ip port", ip, port)
-			dispather.SendConnectCmd(nextNode, ip, port)
+			dispather.SendConnectCmd(peerNode, ip, port)
 		case "socks":
 			if !checkCurrentPeerNode() {
 				break
@@ -144,15 +146,14 @@ func Interactive() {
 				fmt.Println("port number error")
 				break
 			}
-			// dispather.SendSocks5Cmd(nextNode, port)
+			// dispather.SendSocks5Cmd(peerNode, port)
 		case "shell":
 			if !checkCurrentPeerNode() {
 				break
 			}
 			fmt.Println("You can execute dispather in this shell :D, 'exit' to exit")
 			shellExit = false
-			// dispather.SendShellCmd(nextNode) //, cmdStr)
-			// }
+			dispather.SendShellCmd(peerNode)
 			shellExit = true
 		case "upload":
 			if !checkCurrentPeerNode() {
@@ -163,7 +164,7 @@ func Interactive() {
 
 			fmt.Scanf("%s %s", &localPath, &remotePath)
 			fmt.Println("path", localPath, remotePath)
-			dispather.SendUploadCmd(nextNode, localPath, remotePath)
+			dispather.SendUploadCmd(peerNode, localPath, remotePath)
 		case "download":
 			if !checkCurrentPeerNode() {
 				break
@@ -172,7 +173,7 @@ func Interactive() {
 			var localPath string
 			fmt.Scanf("%s %s", &remotePath, &localPath)
 			fmt.Println("path", remotePath, localPath)
-			dispather.SendDownloadCmd(nextNode, remotePath, localPath)
+			dispather.SendDownloadCmd(peerNode, remotePath, localPath)
 		case "exit":
 			os.Exit(0)
 		default:
