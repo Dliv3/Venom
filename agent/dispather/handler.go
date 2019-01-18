@@ -46,12 +46,15 @@ func InitAgentHandler() {
 
 func handleSyncCmd() {
 	for {
-		// 重新初始化网络拓扑，这样当有节点断开时网络拓扑会实时改变
-		node.GNetworkTopology.InitNetworkMap()
+		// fmt.Println("Nodes", node.Nodes)
 
 		var packetHeader protocol.PacketHeader
 		var syncPacket protocol.SyncPacket
 		node.CurrentNode.CommandBuffers[protocol.SYNC].ReadPacket(&packetHeader, &syncPacket)
+
+		// 重新初始化网络拓扑，这样当有节点断开时网络拓扑会实时改变
+		node.GNetworkTopology.InitNetworkMap()
+
 		node.GNetworkTopology.ResolveNetworkMapData(syncPacket.NetworkMap)
 
 		// 通信的对端节点
@@ -86,6 +89,8 @@ func handleSyncCmd() {
 		// 生成路由表
 		node.GNetworkTopology.UpdateRouteTable()
 
+		// fmt.Println("RouteTable", node.GNetworkTopology.RouteTable)
+
 		// 创建Node结构体
 		for key, value := range node.GNetworkTopology.RouteTable {
 			if _, ok := node.Nodes[key]; !ok {
@@ -116,9 +121,9 @@ func handleSyncCmd() {
 		}
 		nextNode.WritePacket(packetHeader, syncPacket)
 
-		fmt.Println(node.CurrentNode.HashID)
-		fmt.Println(node.GNetworkTopology.RouteTable)
-		fmt.Println(node.GNetworkTopology.NetworkMap)
+		// fmt.Println(node.CurrentNode.HashID)
+		// fmt.Println(node.GNetworkTopology.RouteTable)
+		// fmt.Println(node.GNetworkTopology.NetworkMap)
 	}
 }
 

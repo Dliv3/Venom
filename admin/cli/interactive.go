@@ -21,18 +21,24 @@ func checkCurrentPeerNode() bool {
 }
 
 func printNetworkMap() {
+	printed := make(map[string]bool)
 	fmt.Println("A")
-	printEachMap(node.CurrentNode.HashID, 0)
+	printed[node.CurrentNode.HashID] = true
+	printEachMap(node.CurrentNode.HashID, 0, printed)
 }
 
-func printEachMap(nodeID string, depth int) {
+func printEachMap(nodeID string, depth int, printed map[string]bool) {
 	for _, value := range node.GNetworkTopology.NetworkMap[nodeID] {
+		if _, ok := printed[value]; ok {
+			continue
+		}
 		for i := 0; i < depth; i++ {
 			fmt.Print("     ")
 		}
 		fmt.Print("+ -- ")
 		fmt.Println(node.GNodeInfo.NodeUUID2Number[value])
-		printEachMap(value, depth+1)
+		printed[value] = true
+		printEachMap(value, depth+1, printed)
 	}
 }
 

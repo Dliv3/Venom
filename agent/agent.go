@@ -18,7 +18,7 @@ func main() {
 	node.CurrentNode.IsAdmin = 0
 	node.CurrentNode.InitCommandBuffer()
 
-	fmt.Println(node.CurrentNode.HashID)
+	// fmt.Println(node.CurrentNode.HashID)
 
 	dispather.InitAgentHandler()
 

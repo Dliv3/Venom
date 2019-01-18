@@ -20,8 +20,11 @@ func (nt *NetworkTopology) recursiveUpdateRouteTable(root string, key string) {
 		for _, v := range value {
 			// avoid adding the current node to the route table
 			if v != CurrentNode.HashID {
-				nt.RouteTable[v] = root
-				nt.recursiveUpdateRouteTable(v, v)
+				// 避免成环
+				if _, ok := nt.RouteTable[v]; !ok {
+					nt.RouteTable[v] = root
+					nt.recursiveUpdateRouteTable(v, v)
+				}
 			}
 		}
 	}
@@ -66,19 +69,16 @@ func (nt *NetworkTopology) ResolveNetworkMapData(data []byte) {
 	for i := range networkMap {
 		each := strings.Split(networkMap[i], "#")
 		key := each[0]
-		if _, ok := nt.NetworkMap[key]; ok {
-			nt.NetworkMap[key] = append(nt.NetworkMap[key], strings.Split(each[1], "|")...)
+		var tempNodes []string
+		if each[1] == "" {
+			tempNodes = []string{}
 		} else {
-			tempNodes := strings.Split(each[1], "|")
-			var nodes []string
-			for j := range tempNodes {
-				// 删除当前节点
-				if tempNodes[j] == CurrentNode.HashID {
-					nodes = append(tempNodes[:j], tempNodes[j+1:]...)
-					break
-				}
-			}
-			nt.NetworkMap[key] = nodes
+			tempNodes = strings.Split(each[1], "|")
+		}
+		if _, ok := nt.NetworkMap[key]; ok {
+			nt.NetworkMap[key] = append(nt.NetworkMap[key], tempNodes...)
+		} else {
+			nt.NetworkMap[key] = tempNodes
 		}
 		nt.NetworkMap[key] = utils.RemoveDuplicateElement(nt.NetworkMap[key])
 	}
@@ -86,7 +86,6 @@ func (nt *NetworkTopology) ResolveNetworkMapData(data []byte) {
 
 // GenerateNetworkMapData 更具网络拓扑生成SyncPacket中使用的NetworkMap数据
 func (nt *NetworkTopology) GenerateNetworkMapData() []byte {
-	// fmt.Println(CurrentNode.HashID)
 	var networkMap []string
 
 	for key := range nt.NetworkMap {

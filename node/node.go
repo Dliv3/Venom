@@ -96,9 +96,9 @@ func (node *Node) CommandHandler(peerNode *Node) {
 					log.Println("[-]Can not find target node")
 				}
 			} else {
-				fmt.Println("src id:", utils.Array32ToUUID(lowLevelPacket.SrcHashID))
-				fmt.Println("dst id:", utils.Array32ToUUID(lowLevelPacket.DstHashID))
-				fmt.Println("dst cmd type:", lowLevelPacket.CmdType)
+				// fmt.Println("src id:", utils.Array32ToUUID(lowLevelPacket.SrcHashID))
+				// fmt.Println("dst id:", utils.Array32ToUUID(lowLevelPacket.DstHashID))
+				// fmt.Println("dst cmd type:", lowLevelPacket.CmdType)
 				fmt.Println("\ntarget node error")
 			}
 		}

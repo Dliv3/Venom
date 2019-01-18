@@ -53,9 +53,9 @@ func SendSyncCmd() {
 	// 生成节点信息
 	node.GNodeInfo.UpdateNoteInfo()
 
-	fmt.Println(node.CurrentNode.HashID)
-	fmt.Println(node.GNetworkTopology.RouteTable)
-	fmt.Println(node.GNetworkTopology.NetworkMap)
+	// fmt.Println(node.CurrentNode.HashID)
+	// fmt.Println(node.GNetworkTopology.RouteTable)
+	// fmt.Println(node.GNetworkTopology.NetworkMap)
 
 	// 创建Node结构体
 	for key, value := range node.GNetworkTopology.RouteTable {
