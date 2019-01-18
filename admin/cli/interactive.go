@@ -163,7 +163,7 @@ func Interactive() {
 
 			fmt.Scanf("%s %s", &localPath, &remotePath)
 			fmt.Println("path", localPath, remotePath)
-			// dispather.SendUploadCmd(nextNode, localPath, remotePath)
+			dispather.SendUploadCmd(nextNode, localPath, remotePath)
 		case "download":
 			if !checkCurrentPeerNode() {
 				break

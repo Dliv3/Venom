@@ -2,6 +2,7 @@ package dispather
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -235,5 +236,137 @@ func SendDownloadCmd(peerNode *node.Node, remotePath string, localPath string) b
 	bar.Finish()
 	fmt.Println("download file success!")
 
+	return true
+}
+
+// SendUploadCmd 发送上传命令
+func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) bool {
+	if !utils.FileExists(localPath) {
+		fmt.Println("local file does not exists")
+		return false
+	}
+	localFile, err := os.Open(localPath)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	defer localFile.Close()
+
+	// 如果文件过大，提醒用户选择是否继续上次（过大的文件会影响其他命令数据的传输效率）
+	var fileSize = utils.GetFileSize(localPath)
+	if fileSize > 1024*1024*100 {
+		fmt.Print("this file is too large(>100M), still uploading? (y/n)")
+		var choise string
+		fmt.Scanf("%s", &choise)
+		if choise != "y" {
+			fmt.Println("stop upload.")
+			return false
+		}
+	}
+
+	/* ----- before upload ----- */
+	// 在文件上传前，首先要确定remotePath没有错误
+	uploadPacketCmd := protocol.UploadPacketCmd{
+		PathLen: uint32(len(remotePath)),
+		Path:    []byte(remotePath),
+		FileLen: uint64(fileSize),
+	}
+	dataLen, _ := utils.PacketSize(uploadPacketCmd)
+	packetHeader := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+		CmdType:   protocol.UPLOAD,
+		DataLen:   dataLen,
+	}
+
+	peerNode.WritePacket(packetHeader, uploadPacketCmd)
+
+	var packetHeaderRet protocol.PacketHeader
+	var uploadPacketRet protocol.UploadPacketRet
+	err = node.CurrentNode.CommandBuffers[protocol.UPLOAD].ReadPacket(&packetHeaderRet, &uploadPacketRet)
+	if err != nil {
+		log.Println(fmt.Sprintf("[-]SyncPacket Error: %s", err))
+		return false
+	}
+	if uploadPacketRet.Success == 0 {
+		fmt.Println("upload file error: " + string(uploadPacketRet.Msg))
+		return false
+	}
+	/* ----- upload file ------- */
+	peerNode.WritePacket(packetHeader, uploadPacketCmd)
+
+	// 单个数据包最大为MAX_PACKET_SIZE，除去非数据字段DataLen占用4字节
+	var dataBlockSize = int64(global.MAX_PACKET_SIZE - 4)
+	loop := fileSize / dataBlockSize
+	remainder := fileSize % dataBlockSize
+
+	// 进度条功能
+	bar := pb.New64(fileSize)
+
+	// show percents (by default already true)
+	bar.ShowPercent = true
+
+	// show bar (by default already true)
+	bar.ShowBar = true
+
+	bar.ShowCounters = true
+
+	bar.ShowTimeLeft = true
+
+	bar.SetUnits(pb.U_BYTES)
+
+	// and start
+	bar.Start()
+
+	var size int64
+	// TODO: 直接在文件协议数据包中写明会传输几个数据包，而不要使用loop决定
+	for ; loop >= 0; loop-- {
+		var buf []byte
+		if loop > 0 {
+			buf = make([]byte, dataBlockSize)
+		} else {
+			buf = make([]byte, remainder)
+		}
+		// n, err := localFile.Read(buf[0:])
+		n, err := io.ReadFull(localFile, buf)
+		if n > 0 {
+			size += int64(n)
+			dataPacket := protocol.FileDataPacket{
+				DataLen: uint32(n),
+				Data:    buf[0:n],
+			}
+			dataLen, _ := utils.PacketSize(dataPacket)
+			packetHeader := protocol.PacketHeader{
+				Separator: global.PROTOCOL_SEPARATOR,
+				SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+				DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+				CmdType:   protocol.UPLOAD,
+				DataLen:   dataLen,
+			}
+			peerNode.WritePacket(packetHeader, dataPacket)
+			bar.Add64(int64(dataLen))
+		}
+		if err != nil {
+			if err != io.EOF {
+				log.Println("[-]Read File Error")
+			}
+			break
+		}
+	}
+	bar.Finish()
+
+	err = node.CurrentNode.CommandBuffers[protocol.UPLOAD].ReadPacket(&packetHeaderRet, &uploadPacketRet)
+
+	if err != nil {
+		log.Println(fmt.Sprintf("[-]SyncPacket Error: %s", err))
+		return false
+	}
+	if uploadPacketRet.Success == 0 {
+		fmt.Println("upload file error: " + string(uploadPacketRet.Msg))
+		return false
+	}
+	fmt.Println("upload file success!")
 	return true
 }

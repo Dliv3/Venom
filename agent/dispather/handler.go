@@ -47,6 +47,7 @@ func InitAgentHandler() {
 	go handleListenCmd()
 	go handleConnectCmd()
 	go handleDownloadCmd()
+	go handleUploadCmd()
 }
 
 func handleSyncCmd() {
@@ -287,5 +288,78 @@ func handleDownloadCmd() {
 				break
 			}
 		}
+	}
+}
+
+func handleUploadCmd() {
+	for {
+		/* ------ before upload ------- */
+		var packetHeader protocol.PacketHeader
+		var uploadPacketCmd protocol.UploadPacketCmd
+		node.CurrentNode.CommandBuffers[protocol.UPLOAD].ReadPacket(&packetHeader, &uploadPacketCmd)
+
+		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
+
+		packetHeaderRet := protocol.PacketHeader{
+			CmdType:   protocol.UPLOAD,
+			Separator: global.PROTOCOL_SEPARATOR,
+			SrcHashID: packetHeader.DstHashID,
+			DstHashID: packetHeader.SrcHashID,
+		}
+
+		var uploadPacketRet protocol.UploadPacketRet
+
+		var filePath = string(uploadPacketCmd.Path)
+
+		var file *os.File
+		// 如果文件不存在，则上传
+		if !utils.FileExists(filePath) {
+			var err error
+			file, err = os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0644)
+			if err != nil {
+				uploadPacketRet.Success = 0
+				uploadPacketRet.Msg = []byte(fmt.Sprintf("%s", err))
+			} else {
+				uploadPacketRet.Success = 1
+				defer file.Close()
+			}
+		} else {
+			uploadPacketRet.Success = 0
+			uploadPacketRet.Msg = []byte(fmt.Sprintf("%s %s", filePath, ERR_FILE_EXISTS))
+		}
+		uploadPacketRet.MsgLen = uint32(len(uploadPacketRet.Msg))
+
+		adminNode.WritePacket(packetHeaderRet, uploadPacketRet)
+
+		if uploadPacketRet.Success == 0 || file == nil {
+			continue
+		}
+
+		// /* ----- upload file -------- */
+		node.CurrentNode.CommandBuffers[protocol.UPLOAD].ReadPacket(&packetHeader, &uploadPacketCmd)
+
+		var uploadPacketRet2 protocol.UploadPacketRet
+
+		var dataBlockSize = uint64(global.MAX_PACKET_SIZE - 4)
+		loop := int64(uploadPacketCmd.FileLen / dataBlockSize)
+		remainder := uploadPacketCmd.FileLen % dataBlockSize
+		for loop >= 0 {
+			if remainder != 0 {
+				var fileDataPacket protocol.FileDataPacket
+				var packetHeaderRet protocol.PacketHeader
+				node.CurrentNode.CommandBuffers[protocol.UPLOAD].ReadPacket(&packetHeaderRet, &fileDataPacket)
+				_, err := file.Write(fileDataPacket.Data)
+				if err != nil {
+					uploadPacketRet2.Success = 0
+					uploadPacketRet2.Msg = []byte(fmt.Sprintf("%s", err))
+				}
+			}
+			loop--
+		}
+		file.Close()
+
+		uploadPacketRet2.Success = 1
+		uploadPacketRet2.MsgLen = uint32(len(uploadPacketRet.Msg))
+		adminNode.WritePacket(packetHeaderRet, uploadPacketRet2)
 	}
 }
