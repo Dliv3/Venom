@@ -42,6 +42,7 @@ func AgentServer(conn net.Conn) {
 func InitAgentHandler() {
 	go handleSyncCmd()
 	go handleListenCmd()
+	go handleConnectCmd()
 }
 
 func handleSyncCmd() {
@@ -158,5 +159,37 @@ func handleListenCmd() {
 			DstHashID: packetHeader.SrcHashID,
 		}
 		adminNode.WritePacket(packetHeader, listenPacketRet)
+	}
+}
+
+func handleConnectCmd() {
+	for {
+		var packetHeader protocol.PacketHeader
+		var connectPacketCmd protocol.ConnectPacketCmd
+
+		node.CurrentNode.CommandBuffers[protocol.CONNECT].ReadPacket(&packetHeader, &connectPacketCmd)
+
+		adminNode := node.Nodes[util.Array32ToUUID(packetHeader.SrcHashID)]
+
+		err := netio.Init(
+			"connect",
+			fmt.Sprintf("%s:%d", util.Uint32ToIp(connectPacketCmd.IP).String(), connectPacketCmd.Port),
+			AgentClient, false)
+
+		var connectPacketRet protocol.ConnectPacketRet
+		if err != nil {
+			connectPacketRet.Success = 0
+			connectPacketRet.Msg = []byte(fmt.Sprintf("%s", err))
+		} else {
+			connectPacketRet.Success = 1
+		}
+		connectPacketRet.MsgLen = uint32(len(connectPacketRet.Msg))
+		packetHeader = protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			CmdType:   protocol.CONNECT,
+			SrcHashID: util.UUIDToArray32(node.CurrentNode.HashID),
+			DstHashID: packetHeader.SrcHashID,
+		}
+		adminNode.WritePacket(packetHeader, connectPacketRet)
 	}
 }

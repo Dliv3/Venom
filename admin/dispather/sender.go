@@ -2,6 +2,7 @@ package dispather
 
 import (
 	"fmt"
+	"net"
 	"sync"
 
 	"github.com/Dliv3/Venom/global"
@@ -99,31 +100,28 @@ func SendListenCmd(peerNode *node.Node, port uint16) {
 	}
 }
 
+// SendConnectCmd 发送连接命令
 func SendConnectCmd(peerNode *node.Node, ip string, port uint16) {
-	// connectPacketCmd := protocol.ConnectPacketCmd{
-	// 	IP:   util.IpToUint32(net.ParseIP(ip)),
-	// 	Port: port,
-	// }
-	// dataLen, _ := util.PacketSize(connectPacketCmd)
-	// packetHeader := protocol.PacketHeader{
-	// 	Separator: protocol.SEPARATOR,
-	// 	SrcHashID: util.UUIDToArray32(node.CurrentNode.HashID),
-	// 	DstHashID: util.UUIDToArray32(node.CurrentPeerNodeHashID),
-	// 	CmdType:   protocol.CONNECT,
-	// 	DataLen:   dataLen,
-	// }
+	connectPacketCmd := protocol.ConnectPacketCmd{
+		IP:   util.IpToUint32(net.ParseIP(ip)),
+		Port: port,
+	}
+	packetHeader := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: util.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: util.UUIDToArray32(global.CurrentPeerNodeHashID),
+		CmdType:   protocol.CONNECT,
+	}
 
-	// peerNode.WritePacket(packetHeader, connectPacketCmd)
+	peerNode.WritePacket(packetHeader, connectPacketCmd)
 
-	// packet, _ := node.CommandBuffers[protocol.CONNECT].ReadLowLevelPacket()
+	var connectPacketRet protocol.ConnectPacketRet
+	node.CurrentNode.CommandBuffers[protocol.CONNECT].ReadPacket(&packetHeader, &connectPacketRet)
 
-	// var connectPacketRet protocol.ConnectPacketRet
-	// packet.ResolveData(&connectPacketRet)
-
-	// if connectPacketRet.Success == 1 {
-	// 	fmt.Println("connect to remote port success!")
-	// } else {
-	// 	fmt.Println("connect to remote port failed!")
-	// 	fmt.Println(string(connectPacketRet.Msg))
-	// }
+	if connectPacketRet.Success == 1 {
+		fmt.Println("connect to remote port success!")
+	} else {
+		fmt.Println("connect to remote port failed!")
+		fmt.Println(string(connectPacketRet.Msg))
+	}
 }
