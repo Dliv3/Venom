@@ -3,8 +3,10 @@ package dispather
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"os"
 	"sync"
 
 	"github.com/Dliv3/Venom/global"
@@ -12,12 +14,13 @@ import (
 	"github.com/Dliv3/Venom/node"
 	"github.com/Dliv3/Venom/protocol"
 	"github.com/Dliv3/Venom/utils"
-	"gitlab.com/Dliv3/Venom/util"
 )
 
 var ERR_UNKNOWN_CMD = errors.New("unknown command type")
 var ERR_PROTOCOL_SEPARATOR = errors.New("unknown separator")
 var ERR_TARGET_NODE = errors.New("can not find target node")
+var ERR_FILE_EXISTS = errors.New("remote file already exists")
+var ERR_FILE_NOT_EXISTS = errors.New("remote file not exists")
 
 // AgentClient Admin节点作为Client
 func AgentClient(conn net.Conn) {
@@ -43,6 +46,7 @@ func InitAgentHandler() {
 	go handleSyncCmd()
 	go handleListenCmd()
 	go handleConnectCmd()
+	go handleDownloadCmd()
 }
 
 func handleSyncCmd() {
@@ -134,10 +138,10 @@ func handleListenCmd() {
 		var listenPacketCmd protocol.ListenPacketCmd
 		node.CurrentNode.CommandBuffers[protocol.LISTEN].ReadPacket(&packetHeader, &listenPacketCmd)
 
-		// adminNode := node.Nodes[node.GNetworkTopology.RouteTable[util.Array32ToUUID(packetHeader.SrcHashID)]]
+		// adminNode := node.Nodes[node.GNetworkTopology.RouteTable[utils.Array32ToUUID(packetHeader.SrcHashID)]]
 
 		// 网络拓扑同步完成之后即可直接使用以及构造好的节点结构体
-		adminNode := node.Nodes[util.Array32ToUUID(packetHeader.SrcHashID)]
+		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
 
 		err := netio.Init(
 			"listen",
@@ -155,7 +159,7 @@ func handleListenCmd() {
 		packetHeader = protocol.PacketHeader{
 			Separator: global.PROTOCOL_SEPARATOR,
 			CmdType:   protocol.LISTEN,
-			SrcHashID: util.UUIDToArray32(node.CurrentNode.HashID),
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
 			DstHashID: packetHeader.SrcHashID,
 		}
 		adminNode.WritePacket(packetHeader, listenPacketRet)
@@ -169,11 +173,11 @@ func handleConnectCmd() {
 
 		node.CurrentNode.CommandBuffers[protocol.CONNECT].ReadPacket(&packetHeader, &connectPacketCmd)
 
-		adminNode := node.Nodes[util.Array32ToUUID(packetHeader.SrcHashID)]
+		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
 
 		err := netio.Init(
 			"connect",
-			fmt.Sprintf("%s:%d", util.Uint32ToIp(connectPacketCmd.IP).String(), connectPacketCmd.Port),
+			fmt.Sprintf("%s:%d", utils.Uint32ToIp(connectPacketCmd.IP).String(), connectPacketCmd.Port),
 			AgentClient, false)
 
 		var connectPacketRet protocol.ConnectPacketRet
@@ -187,9 +191,101 @@ func handleConnectCmd() {
 		packetHeader = protocol.PacketHeader{
 			Separator: global.PROTOCOL_SEPARATOR,
 			CmdType:   protocol.CONNECT,
-			SrcHashID: util.UUIDToArray32(node.CurrentNode.HashID),
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
 			DstHashID: packetHeader.SrcHashID,
 		}
 		adminNode.WritePacket(packetHeader, connectPacketRet)
+	}
+}
+
+func handleDownloadCmd() {
+	for {
+		var packetHeader protocol.PacketHeader
+		var downloadPacketCmd protocol.DownloadPacketCmd
+
+		node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&packetHeader, &downloadPacketCmd)
+
+		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
+
+		filePath := string(downloadPacketCmd.Path)
+
+		var downloadPacketRet protocol.DownloadPacketRet
+		var file *os.File
+		var fileSize int64
+		// 如果文件存在，则下载
+		if utils.FileExists(filePath) {
+			var err error
+			file, err = os.Open(filePath)
+			if err != nil {
+				downloadPacketRet.Success = 0
+				downloadPacketRet.Msg = []byte(fmt.Sprintf("%s", err))
+			} else {
+				defer file.Close()
+				downloadPacketRet.Success = 1
+				fileSize = utils.GetFileSize(filePath)
+				downloadPacketRet.FileLen = uint64(fileSize)
+			}
+		} else {
+			downloadPacketRet.Success = 0
+			downloadPacketRet.Msg = []byte(fmt.Sprintf("%s", ERR_FILE_NOT_EXISTS))
+		}
+
+		downloadPacketRet.MsgLen = uint32(len(downloadPacketRet.Msg))
+
+		var retPacketHeader protocol.PacketHeader
+		retPacketHeader.CmdType = protocol.DOWNLOAD
+		retPacketHeader.Separator = global.PROTOCOL_SEPARATOR
+		retPacketHeader.SrcHashID = packetHeader.DstHashID
+		retPacketHeader.DstHashID = packetHeader.SrcHashID
+
+		adminNode.WritePacket(retPacketHeader, downloadPacketRet)
+
+		if downloadPacketRet.Success == 0 {
+			continue
+		}
+
+		var cmdPacketHeader protocol.PacketHeader
+		node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&cmdPacketHeader, &downloadPacketCmd)
+
+		if downloadPacketCmd.StillDownload == 0 {
+			continue
+		}
+
+		adminNode.WritePacket(retPacketHeader, downloadPacketRet)
+
+		var dataBlockSize = uint64(global.MAX_PACKET_SIZE - 4)
+		loop := int64(downloadPacketRet.FileLen / dataBlockSize)
+		remainder := downloadPacketRet.FileLen % dataBlockSize
+
+		var size int64
+		for ; loop >= 0; loop-- {
+			var buf []byte
+			if loop > 0 {
+				buf = make([]byte, dataBlockSize)
+			} else {
+				buf = make([]byte, remainder)
+			}
+			n, err := io.ReadFull(file, buf)
+			if n > 0 {
+				size += int64(n)
+				dataPacket := protocol.FileDataPacket{
+					DataLen: uint32(n),
+					Data:    buf[0:n],
+				}
+				retPacketHeader := protocol.PacketHeader{
+					Separator: global.PROTOCOL_SEPARATOR,
+					SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+					DstHashID: packetHeader.SrcHashID,
+					CmdType:   protocol.DOWNLOAD,
+				}
+				adminNode.WritePacket(retPacketHeader, dataPacket)
+			}
+			if err != nil {
+				if err != io.EOF {
+					log.Println("[-]Read File Error")
+				}
+				break
+			}
+		}
 	}
 }

@@ -172,7 +172,7 @@ func Interactive() {
 			var localPath string
 			fmt.Scanf("%s %s", &remotePath, &localPath)
 			fmt.Println("path", remotePath, localPath)
-			// dispather.SendDownloadCmd(nextNode, remotePath, localPath)
+			dispather.SendDownloadCmd(nextNode, remotePath, localPath)
 		case "exit":
 			os.Exit(0)
 		default:

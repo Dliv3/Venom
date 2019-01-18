@@ -2,14 +2,16 @@ package dispather
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"os"
 	"sync"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/node"
 	"github.com/Dliv3/Venom/protocol"
 	"github.com/Dliv3/Venom/utils"
-	"gitlab.com/Dliv3/Venom/util"
+	"github.com/cheggaaa/pb"
 )
 
 // SendSyncCmd 发送同步网络拓扑的命令
@@ -82,8 +84,8 @@ func SendListenCmd(peerNode *node.Node, port uint16) {
 	}
 	packetHeader := protocol.PacketHeader{
 		Separator: global.PROTOCOL_SEPARATOR,
-		SrcHashID: util.UUIDToArray32(node.CurrentNode.HashID),
-		DstHashID: util.UUIDToArray32(global.CurrentPeerNodeHashID),
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
 		CmdType:   protocol.LISTEN,
 	}
 
@@ -103,13 +105,13 @@ func SendListenCmd(peerNode *node.Node, port uint16) {
 // SendConnectCmd 发送连接命令
 func SendConnectCmd(peerNode *node.Node, ip string, port uint16) {
 	connectPacketCmd := protocol.ConnectPacketCmd{
-		IP:   util.IpToUint32(net.ParseIP(ip)),
+		IP:   utils.IpToUint32(net.ParseIP(ip)),
 		Port: port,
 	}
 	packetHeader := protocol.PacketHeader{
 		Separator: global.PROTOCOL_SEPARATOR,
-		SrcHashID: util.UUIDToArray32(node.CurrentNode.HashID),
-		DstHashID: util.UUIDToArray32(global.CurrentPeerNodeHashID),
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
 		CmdType:   protocol.CONNECT,
 	}
 
@@ -124,4 +126,114 @@ func SendConnectCmd(peerNode *node.Node, ip string, port uint16) {
 		fmt.Println("connect to remote port failed!")
 		fmt.Println(string(connectPacketRet.Msg))
 	}
+}
+
+// SendDownloadCmd 发送下载命令
+func SendDownloadCmd(peerNode *node.Node, remotePath string, localPath string) bool {
+	/* ----------- before download file ---------- */
+	if utils.FileExists(localPath) {
+		fmt.Println("local file already exists")
+		return false
+	}
+
+	localFile, err := os.OpenFile(localPath, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	defer localFile.Close()
+
+	downloadPacketCmd := protocol.DownloadPacketCmd{
+		PathLen: uint32(len(remotePath)),
+		Path:    []byte(remotePath),
+	}
+	packetHeader := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+		CmdType:   protocol.DOWNLOAD,
+	}
+	peerNode.WritePacket(packetHeader, downloadPacketCmd)
+
+	var retPacketHeader protocol.PacketHeader
+	var downloadPacketRet protocol.DownloadPacketRet
+	err = node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&retPacketHeader, &downloadPacketRet)
+	if err != nil {
+		log.Println(fmt.Sprintf("[-]DownloadPacket Error: %s", err))
+		return false
+	}
+
+	if downloadPacketRet.Success == 0 {
+		fmt.Println("download file error: " + string(downloadPacketRet.Msg))
+		if utils.FileExists(localPath) {
+			os.Remove(localPath)
+		}
+		return false
+	}
+
+	if downloadPacketRet.FileLen > 1024*1024*100 {
+		fmt.Print("this file is too large(>100M), still downloading? (y/n)")
+		var choise string
+		fmt.Scanf("%s", &choise)
+		if choise != "y" {
+			fmt.Println("stop download.")
+			downloadPacketCmd.StillDownload = 0
+			peerNode.WritePacket(packetHeader, downloadPacketCmd)
+
+			if utils.FileExists(localPath) {
+				os.Remove(localPath)
+			}
+			return false
+		}
+	}
+
+	downloadPacketCmd.StillDownload = 1
+	peerNode.WritePacket(packetHeader, downloadPacketCmd)
+
+	/* ---------- download file ---------- */
+	err = node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&packetHeader, &downloadPacketRet)
+	if err != nil {
+		log.Println(fmt.Sprintf("[-]DownloadPacket Error: %s", err))
+		return false
+	}
+
+	// 开始下载文件
+	var dataBlockSize = uint64(global.MAX_PACKET_SIZE - 4)
+	loop := int64(downloadPacketRet.FileLen / dataBlockSize)
+	remainder := downloadPacketRet.FileLen % dataBlockSize
+
+	// 进度条功能
+	bar := pb.New64(int64(downloadPacketRet.FileLen))
+
+	// show percents (by default already true)
+	bar.ShowPercent = true
+
+	// show bar (by default already true)
+	bar.ShowBar = true
+
+	bar.ShowCounters = true
+
+	bar.ShowTimeLeft = true
+
+	bar.SetUnits(pb.U_BYTES)
+
+	// and start
+	bar.Start()
+
+	for ; loop >= 0; loop-- {
+		if remainder != 0 {
+			var fileDataPacket protocol.FileDataPacket
+			node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&packetHeader, &fileDataPacket)
+			_, err = localFile.Write(fileDataPacket.Data)
+			if err != nil {
+				fmt.Println(err)
+			}
+			bar.Add64(int64(fileDataPacket.DataLen))
+		}
+	}
+	bar.Finish()
+	fmt.Println("download file success!")
+
+	return true
 }
