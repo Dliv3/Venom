@@ -143,12 +143,7 @@ func ReadPacket(input io.Reader, packet interface{}) error {
 			}
 			// 如果长度为0，就不需要读数据了
 			if length != 0 {
-				// TODO 临时修补，未找到导致length超大的原因
-				// [-]Buffer too large:  16335818221832020393
 				if length > global.MAX_PACKET_SIZE {
-					// debug.Println2(fmt.Sprintf("[-]Buffer too large: %d", length))
-					// 防止申请内存过大导致占用过多系统内存
-					// return errors.New("Buffer too large")
 					return nil
 				}
 				buf := make([]byte, length)
@@ -239,7 +234,7 @@ func NetCopy(input, output net.Conn) (err error) {
 				output.Write(buf[:count])
 			}
 			if err != io.EOF {
-				log.Fatalln("[-]Read Error:", err)
+				log.Fatalln("[-]Read error:", err)
 			}
 			break
 		}

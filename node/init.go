@@ -12,7 +12,7 @@ import (
 	"github.com/Dliv3/Venom/utils"
 )
 
-var ERR_UNKNOWN_CMD = errors.New("Unknown Command Type")
+var ERR_UNKNOWN_CMD = errors.New("Unknown command type")
 
 func ServerInitConnection(conn net.Conn) (bool, *Node) {
 	// 端口重用模式下发送的一段垃圾数据
@@ -23,7 +23,7 @@ func ServerInitConnection(conn net.Conn) (bool, *Node) {
 
 	if PacketHeader.Separator != global.PROTOCOL_SEPARATOR ||
 		PacketHeader.CmdType != protocol.INIT {
-		log.Println("[-]InitPacket Error: Separator,CmdType or Dst Error")
+		log.Println("[-]InitPacket error: separator or cmd type")
 		conn.Close()
 		return false, nil
 	}
@@ -90,7 +90,7 @@ func ClentInitConnection(conn net.Conn) (bool, *Node) {
 	netio.ReadPacket(conn, &PacketHeader)
 	if PacketHeader.Separator != global.PROTOCOL_SEPARATOR ||
 		PacketHeader.CmdType != protocol.INIT {
-		log.Println("[-]InitPacket Error: Separator or CmdType Error")
+		log.Println("[-]InitPacket error: separator or cmd type error")
 		conn.Close()
 		return false, nil
 	}

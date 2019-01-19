@@ -83,7 +83,7 @@ func (node *Node) CommandHandler(peerNode *Node) {
 					log.Println(fmt.Sprintf("[-]%s", ERR_UNKNOWN_CMD))
 				}
 			} else {
-				log.Println("[-]Separator Error")
+				log.Println("[-]Separator error")
 			}
 		default:
 			// 如果节点为Agent节点转发
@@ -99,7 +99,7 @@ func (node *Node) CommandHandler(peerNode *Node) {
 				// fmt.Println("src id:", utils.Array32ToUUID(lowLevelPacket.SrcHashID))
 				// fmt.Println("dst id:", utils.Array32ToUUID(lowLevelPacket.DstHashID))
 				// fmt.Println("dst cmd type:", lowLevelPacket.CmdType)
-				fmt.Println("\ntarget node error")
+				fmt.Println("[-]Target node error")
 			}
 		}
 	}
@@ -131,7 +131,7 @@ func (node *Node) Disconnect() {
 
 func (node *Node) GetSocks5DataBuffer(sessionID uint16) *Buffer {
 	if int(sessionID) > len(node.Socks5DataBuffer) {
-		log.Println("[-]Socks5 SessionID Error: ", sessionID)
+		log.Println("[-]Socks5 sessionID error: ", sessionID)
 		return nil
 	}
 	node.Socks5DataBufferLock.RLock()

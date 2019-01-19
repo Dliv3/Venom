@@ -35,7 +35,7 @@ func AgentClient(conn net.Conn) {
 
 // AgentServer Admin节点作为Server
 func AgentServer(conn net.Conn) {
-	log.Println("[+]Remote Connection: ", conn.RemoteAddr())
+	log.Println("[+]Remote connection: ", conn.RemoteAddr())
 	result, peerNode := node.ServerInitConnection(conn)
 	if result {
 		log.Println("[+]A new node connect to this node success")
@@ -287,7 +287,7 @@ func handleDownloadCmd() {
 			}
 			if err != nil {
 				if err != io.EOF {
-					log.Println("[-]Read File Error")
+					log.Println("[-]Read file error")
 				}
 				break
 			}

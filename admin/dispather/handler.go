@@ -17,10 +17,10 @@ func AdminClient(conn net.Conn) {
 
 // AdminServer Admin节点作为Server
 func AdminServer(conn net.Conn) {
-	fmt.Println("\nremote connection: ", conn.RemoteAddr())
+	fmt.Println("\n[+]Remote connection: ", conn.RemoteAddr())
 	result, peerNode := node.ServerInitConnection(conn)
 	if result {
-		fmt.Print("a new node connect to admin node success")
+		fmt.Print("[+]A new node connect to admin node success")
 		go node.CurrentNode.CommandHandler(peerNode)
 	}
 }

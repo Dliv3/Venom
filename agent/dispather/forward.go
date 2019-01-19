@@ -9,7 +9,6 @@ import (
 	"github.com/Dliv3/Venom/node"
 	"github.com/Dliv3/Venom/protocol"
 	"github.com/Dliv3/Venom/utils"
-	"gitlab.com/Dliv3/Venom/util"
 )
 
 func CopyStdoutPipe2Node(input io.Reader, output *node.Node, c chan bool) {
@@ -74,12 +73,12 @@ func CopyNet2Node(input net.Conn, output *node.Node, currentSessionID uint16, c 
 			DataLen:   uint32(count),
 			Data:      buf[:count],
 		}
-		size, _ := util.PacketSize(socks5Data)
+		size, _ := utils.PacketSize(socks5Data)
 		packetHeader := protocol.PacketHeader{
 			Separator: global.PROTOCOL_SEPARATOR,
 			CmdType:   protocol.SOCKSDATA,
-			SrcHashID: util.UUIDToArray32(node.CurrentNode.HashID),
-			DstHashID: util.UUIDToArray32(output.HashID),
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+			DstHashID: utils.UUIDToArray32(output.HashID),
 			DataLen:   size,
 		}
 		if err != nil {

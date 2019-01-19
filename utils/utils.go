@@ -191,8 +191,8 @@ func PacketSize(packet interface{}) (uint64, error) {
 		case [32]byte:
 			size += uint64(len(value))
 		default:
-			log.Fatalln("[-]PacketSize Error: Type Unsupport")
-			return 0, errors.New("Type Unsupport")
+			log.Fatalln("[-]PacketSize error: type unsupport")
+			return 0, errors.New("Type unsupport")
 		}
 	}
 	return size, nil

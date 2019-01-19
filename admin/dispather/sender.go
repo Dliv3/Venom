@@ -3,7 +3,6 @@ package dispather
 import (
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"runtime"
@@ -163,7 +162,7 @@ func SendDownloadCmd(peerNode *node.Node, remotePath string, localPath string) b
 	var downloadPacketRet protocol.DownloadPacketRet
 	err = node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&retPacketHeader, &downloadPacketRet)
 	if err != nil {
-		log.Println(fmt.Sprintf("[-]DownloadPacket Error: %s", err))
+		fmt.Println(fmt.Sprintf("downloadpacket error: %s", err))
 		return false
 	}
 
@@ -197,7 +196,7 @@ func SendDownloadCmd(peerNode *node.Node, remotePath string, localPath string) b
 	/* ---------- download file ---------- */
 	err = node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&packetHeader, &downloadPacketRet)
 	if err != nil {
-		log.Println(fmt.Sprintf("[-]DownloadPacket Error: %s", err))
+		fmt.Println(fmt.Sprintf("[-]downloadpacket error: %s", err))
 		return false
 	}
 
@@ -287,7 +286,7 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 	var uploadPacketRet protocol.UploadPacketRet
 	err = node.CurrentNode.CommandBuffers[protocol.UPLOAD].ReadPacket(&packetHeaderRet, &uploadPacketRet)
 	if err != nil {
-		log.Println(fmt.Sprintf("[-]SyncPacket Error: %s", err))
+		fmt.Println(fmt.Sprintf("syncpacket error: %s", err))
 		return false
 	}
 	if uploadPacketRet.Success == 0 {
@@ -350,7 +349,7 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 		}
 		if err != nil {
 			if err != io.EOF {
-				log.Println("[-]Read File Error")
+				fmt.Println("[-]read file error")
 			}
 			break
 		}
@@ -360,7 +359,7 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 	err = node.CurrentNode.CommandBuffers[protocol.UPLOAD].ReadPacket(&packetHeaderRet, &uploadPacketRet)
 
 	if err != nil {
-		log.Println(fmt.Sprintf("[-]SyncPacket Error: %s", err))
+		fmt.Println(fmt.Sprintf("[-]syncpacket error: %s", err))
 		return false
 	}
 	if uploadPacketRet.Success == 0 {

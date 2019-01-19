@@ -20,13 +20,13 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 	if tcpType == "connect" {
 		addr, err := net.ResolveTCPAddr("tcp", tcpService)
 		if err != nil {
-			log.Println("[-]ResolveTCPAddr Error:", err)
+			log.Println("[-]ResolveTCPAddr error:", err)
 			return err
 		}
 
 		conn, err := net.DialTCP("tcp", nil, addr)
 		if err != nil {
-			log.Println("[-]DialTCP Error:", err)
+			log.Println("[-]DialTCP error:", err)
 			return err
 		}
 
@@ -44,14 +44,14 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 		} else {
 			addr, err := net.ResolveTCPAddr("tcp", tcpService)
 			if err != nil {
-				log.Println("[-]ResolveTCPAddr Error:", err)
+				log.Println("[-]ResolveTCPAddr error:", err)
 				return err
 			}
 			listener, err = net.ListenTCP("tcp", addr)
 		}
 
 		if err != nil {
-			log.Println("[-]ListenTCP Error:", err)
+			log.Println("[-]ListenTCP error:", err)
 			return err
 		}
 
@@ -59,7 +59,7 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 			for {
 				conn, err := listener.Accept()
 				if err != nil {
-					log.Println("[-]Accept Error:", err)
+					log.Println("[-]Accept error:", err)
 					continue
 				}
 
@@ -69,13 +69,13 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 						port := strings.Split(tcpService, ":")[1]
 						addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("127.0.0.1:%s", port))
 						if err != nil {
-							log.Println("[-]ResolveTCPAddr Error:", err)
+							log.Println("[-]ResolveTCPAddr error:", err)
 							return
 						}
 
 						server, err := net.DialTCP("tcp", nil, addr)
 						if err != nil {
-							log.Println("[-]DialTCP Error:", err)
+							log.Println("[-]DialTCP error:", err)
 							return
 						}
 
@@ -103,7 +103,7 @@ func isAppProtocol(conn net.Conn) (bool, []byte) {
 	_, err := Read(conn, protocol)
 
 	if err != nil {
-		log.Println("[-]Read Protocol Packet Error: ", err)
+		log.Println("[-]Read protocol packet error: ", err)
 		return false, protocol
 	}
 
@@ -120,13 +120,13 @@ func InitTCP(tcpType string, tcpService string, handlerFunc func(net.Conn, strin
 	if tcpType == "connect" {
 		addr, err := net.ResolveTCPAddr("tcp", tcpService)
 		if err != nil {
-			log.Println("[-]ResolveTCPAddr Error:", err)
+			log.Println("[-]ResolveTCPAddr error:", err)
 			return err
 		}
 
 		conn, err := net.DialTCP("tcp", nil, addr)
 		if err != nil {
-			log.Println("[-]DialTCP Error:", err)
+			log.Println("[-]DialTCP error:", err)
 			return err
 		}
 
@@ -141,13 +141,13 @@ func InitTCP(tcpType string, tcpService string, handlerFunc func(net.Conn, strin
 
 		addr, err := net.ResolveTCPAddr("tcp", tcpService)
 		if err != nil {
-			log.Println("[-]ResolveTCPAddr Error:", err)
+			log.Println("[-]ResolveTCPAddr error:", err)
 			return err
 		}
 		listener, err = net.ListenTCP("tcp", addr)
 
 		if err != nil {
-			log.Println("[-]ListenTCP Error:", err)
+			log.Println("[-]ListenTCP error:", err)
 			return err
 		}
 
@@ -157,7 +157,7 @@ func InitTCP(tcpType string, tcpService string, handlerFunc func(net.Conn, strin
 				c <- true
 				conn, err := listener.Accept()
 				if err != nil {
-					log.Println("[-]Accept Error:", err)
+					log.Println("[-]Accept error:", err)
 					continue
 				}
 				go handlerFunc(conn, peerNodeID, c)
