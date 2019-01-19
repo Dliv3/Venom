@@ -8,7 +8,7 @@ const MAX_PACKET_SIZE = 10240
 const TCP_MAX_CONNECTION = 7168
 
 // 协议数据分隔符
-const PROTOCOL_SEPARATOR = "TCMD"
+const PROTOCOL_SEPARATOR = "VCMD"
 
 // 协议特征, 用于在端口重用时鉴别
 const PROTOCOL_FEATURE = "ABCDEFGH"
