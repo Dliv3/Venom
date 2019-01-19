@@ -55,10 +55,7 @@ func Interactive() {
 			if !shellExit {
 				// ctrl c 处理函数
 				fmt.Println("Ctrl-C")
-				global.SigInteruptHandler()
 			} else {
-				// signal.Reset(syscall.SIGINT, syscall.SIGTERM)
-				// 不优雅地解决一下退出问题
 				os.Exit(0)
 			}
 		}
@@ -151,7 +148,7 @@ func Interactive() {
 			if !checkCurrentPeerNode() {
 				break
 			}
-			fmt.Println("You can execute dispather in this shell :D, 'exit' to exit")
+			fmt.Println("You can execute dispather in this shell :D, 'exit' to exit, 'ctrl-c' to kill this shell")
 			shellExit = false
 			dispather.SendShellCmd(peerNode)
 			shellExit = true

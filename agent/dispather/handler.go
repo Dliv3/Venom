@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"sync"
 
 	"github.com/Dliv3/Venom/global"
@@ -48,6 +49,7 @@ func InitAgentHandler() {
 	go handleConnectCmd()
 	go handleDownloadCmd()
 	go handleUploadCmd()
+	go handleShellCmd()
 }
 
 func handleSyncCmd() {
@@ -361,5 +363,82 @@ func handleUploadCmd() {
 		uploadPacketRet2.Success = 1
 		uploadPacketRet2.MsgLen = uint32(len(uploadPacketRet.Msg))
 		adminNode.WritePacket(packetHeaderRet, uploadPacketRet2)
+	}
+}
+
+func handleShellCmd() bool {
+
+	for {
+
+		var packetHeader protocol.PacketHeader
+		var shellPacketCmd protocol.ShellPacketCmd
+
+		node.CurrentNode.CommandBuffers[protocol.SHELL].ReadPacket(&packetHeader, &shellPacketCmd)
+
+		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
+
+		if shellPacketCmd.Start != 1 {
+			continue
+		}
+
+		var cmd *exec.Cmd
+
+		switch utils.GetSystemType() {
+		// windows
+		case 0x01:
+			cmd = exec.Command("c:\\windows\\system32\\cmd.exe")
+		// mac , linux, others
+		default:
+			cmd = exec.Command("/bin/bash", "-i")
+		}
+
+		out, _ := cmd.StdoutPipe()
+		in, _ := cmd.StdinPipe()
+		cmd.Stderr = cmd.Stdout
+
+		if err := cmd.Start(); err != nil {
+			// log.Fatal(err)
+			shellPacketRet := protocol.ShellPacketRet{
+				Success: 0,
+			}
+			packetHeaderRet := protocol.PacketHeader{
+				Separator: global.PROTOCOL_SEPARATOR,
+				CmdType:   protocol.SHELL,
+				SrcHashID: packetHeader.DstHashID,
+				DstHashID: packetHeader.SrcHashID,
+			}
+			adminNode.WritePacket(packetHeaderRet, shellPacketRet)
+			continue
+		}
+
+		shellPacketRet := protocol.ShellPacketRet{
+			Success: 1,
+		}
+		packetHeaderRet := protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			CmdType:   protocol.SHELL,
+			SrcHashID: packetHeader.DstHashID,
+			DstHashID: packetHeader.SrcHashID,
+		}
+		adminNode.WritePacket(packetHeaderRet, shellPacketRet)
+
+		c := make(chan bool, 2)
+		go CopyNode2StdinPipe(adminNode, in, c, cmd)
+		go CopyStdoutPipe2Node(out, adminNode, c)
+		<-c
+		<-c
+		cmd.Wait()
+
+		// exit
+		ShellPacketRet := protocol.ShellPacketRet{
+			Success: 0,
+		}
+		packetHeader = protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			CmdType:   protocol.SHELL,
+			SrcHashID: packetHeader.DstHashID,
+			DstHashID: packetHeader.SrcHashID,
+		}
+		adminNode.WritePacket(packetHeader, ShellPacketRet)
 	}
 }

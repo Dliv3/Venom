@@ -370,3 +370,34 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 	fmt.Println("upload file success!")
 	return true
 }
+
+// SendShellCmd 发送shell命令
+func SendShellCmd(peerNode *node.Node) {
+
+	shellPacketCmd := protocol.ShellPacketCmd{
+		Start: 1,
+	}
+	packetHeader := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+		CmdType:   protocol.SHELL,
+	}
+
+	peerNode.WritePacket(packetHeader, shellPacketCmd)
+
+	var packetHeaderRet protocol.PacketHeader
+	var shellPacketRet protocol.ShellPacketRet
+	node.CurrentNode.CommandBuffers[protocol.SHELL].ReadPacket(&packetHeaderRet, &shellPacketRet)
+
+	if shellPacketRet.Success == 1 {
+		c := make(chan bool, 2)
+		go CopyStdin2Node(os.Stdin, peerNode, c)
+		go CopyNode2Stdout(peerNode, os.Stdout, c)
+		<-c
+		<-c
+		// exit = true
+	} else {
+		fmt.Println("something error.")
+	}
+}

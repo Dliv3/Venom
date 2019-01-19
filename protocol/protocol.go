@@ -75,10 +75,12 @@ type InitPacketRet struct {
 	HashID  [32]byte
 }
 
-// UploadPacketCmd 直接将文件全部读取内存中再发送太浪费内存
-// 但是不这样设计就会破坏对协议的统一操作封装（ReadPacket/WritePacket）
-// TODO 怎么做改进呢？
-// 暂时考虑可以将File字段从协议中剔除然后单独处理File字段
+type SyncPacket struct {
+	NetworkMapLen uint64
+	NetworkMap    []byte
+}
+
+// UploadPacketCmd
 type UploadPacketCmd struct {
 	PathLen uint32 // 目标路径长度
 	Path    []byte
@@ -152,47 +154,14 @@ type Socks5DataPacket struct {
 	Close   uint16 // 1表示连接关闭
 }
 
-// type Socks5DataPacket struct {
-// 	// Success uint16 // 操作是否成功， 1 or 0
-// 	SessionID uint16
-// 	DataLen   uint32 // 返回的信息长度
-// 	Data      []byte // 如果成功则为空, 否则为错误信息
-// }
-
-type ShellControlPacketCmd struct {
-	Start uint16
+type ShellPacketCmd struct {
+	Start  uint16 // 启动shell
+	CmdLen uint32 // 要执行的命令
+	Cmd    []byte // 执行命令的长度
 }
 
-type ShellControlPacketRet struct {
-	Success uint16
-}
-
-type ShellDataPacket struct {
-	Success uint16
-	DataLen uint32 // 要执行的命令
-	Data    []byte // 执行命令的长度
-}
-
-// type ShellPacketRet struct {
-// 	Success uint16 // 操作是否成功， 1 or 0
-// 	MsgLen  uint32 // 返回的信息长度
-// 	Msg     []byte // 如果成功则为空, 否则为错误信息
-// }
-
-// SyncPacketCmd应该为广播包，即PacketHeader中的目的地址为全F
-// 向所有节点广播现有路由表
-// type SyncPacketCmd struct {
-// 	NodeIDsLen      uint32
-// 	NodeIDs         []byte
-// 	NodeDistanceLen uint32
-// 	NodeDistance    []byte
-// }
-
-type SyncPacket struct {
-	// NodeIDsLen      uint32
-	// NodeIDs         []byte
-	// NodeDistanceLen uint32
-	// NodeDistance    []byte
-	NetworkMapLen uint64
-	NetworkMap    []byte
+type ShellPacketRet struct {
+	Success uint16 // 操作是否成功， 1 or 0
+	DataLen uint32 // 返回的信息长度
+	Data    []byte // 如果成功则为空, 否则为错误信息
 }
