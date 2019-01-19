@@ -86,7 +86,7 @@ func SendListenCmd(peerNode *node.Node, port uint16) {
 	packetHeader := protocol.PacketHeader{
 		Separator: global.PROTOCOL_SEPARATOR,
 		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+		DstHashID: utils.UUIDToArray32(peerNode.HashID),
 		CmdType:   protocol.LISTEN,
 	}
 
@@ -112,7 +112,7 @@ func SendConnectCmd(peerNode *node.Node, ip string, port uint16) {
 	packetHeader := protocol.PacketHeader{
 		Separator: global.PROTOCOL_SEPARATOR,
 		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+		DstHashID: utils.UUIDToArray32(peerNode.HashID),
 		CmdType:   protocol.CONNECT,
 	}
 
@@ -152,7 +152,7 @@ func SendDownloadCmd(peerNode *node.Node, remotePath string, localPath string) b
 	packetHeader := protocol.PacketHeader{
 		Separator: global.PROTOCOL_SEPARATOR,
 		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+		DstHashID: utils.UUIDToArray32(peerNode.HashID),
 		CmdType:   protocol.DOWNLOAD,
 	}
 	peerNode.WritePacket(packetHeader, downloadPacketCmd)
@@ -276,7 +276,7 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 	packetHeader := protocol.PacketHeader{
 		Separator: global.PROTOCOL_SEPARATOR,
 		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+		DstHashID: utils.UUIDToArray32(peerNode.HashID),
 		CmdType:   protocol.UPLOAD,
 		DataLen:   dataLen,
 	}
@@ -341,7 +341,7 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 			packetHeader := protocol.PacketHeader{
 				Separator: global.PROTOCOL_SEPARATOR,
 				SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-				DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+				DstHashID: utils.UUIDToArray32(peerNode.HashID),
 				CmdType:   protocol.UPLOAD,
 				DataLen:   dataLen,
 			}
@@ -380,7 +380,7 @@ func SendShellCmd(peerNode *node.Node) {
 	packetHeader := protocol.PacketHeader{
 		Separator: global.PROTOCOL_SEPARATOR,
 		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-		DstHashID: utils.UUIDToArray32(global.CurrentPeerNodeHashID),
+		DstHashID: utils.UUIDToArray32(peerNode.HashID),
 		CmdType:   protocol.SHELL,
 	}
 

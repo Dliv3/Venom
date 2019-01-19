@@ -8,12 +8,14 @@ import (
 	"syscall"
 
 	"github.com/Dliv3/Venom/admin/dispather"
-	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/node"
 )
 
+// admin节点想要操作的对端节点的ID，主要用于goto命令
+var currentPeerNodeHashID string
+
 func checkCurrentPeerNode() bool {
-	if global.CurrentPeerNodeHashID == "" {
+	if currentPeerNodeHashID == "" {
 		fmt.Println("you should select node first")
 		return false
 	}
@@ -63,7 +65,7 @@ func Interactive() {
 	var nodeID int
 	var peerNode *node.Node
 	for {
-		if global.CurrentPeerNodeHashID == "" {
+		if currentPeerNodeHashID == "" {
 			fmt.Print("(admin node)>>> ")
 		} else {
 			fmt.Printf("(node %d)>>> ", nodeID)
@@ -107,10 +109,10 @@ func Interactive() {
 				fmt.Println("unknown nodeID")
 				break
 			}
-			global.CurrentPeerNodeHashID = node.GNodeInfo.NodeNumber2UUID[nodeID]
-			// nextNodeID := node.GNetworkTopology.RouteTable[global.CurrentPeerNodeHashID]
+			currentPeerNodeHashID = node.GNodeInfo.NodeNumber2UUID[nodeID]
+			// nextNodeID := node.GNetworkTopology.RouteTable[currentPeerNodeHashID]
 			// nextNode = node.Nodes[nextNodeID]
-			peerNode = node.Nodes[global.CurrentPeerNodeHashID]
+			peerNode = node.Nodes[currentPeerNodeHashID]
 		case "listen":
 			if !checkCurrentPeerNode() {
 				break
