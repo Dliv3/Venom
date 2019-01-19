@@ -34,9 +34,8 @@ type Packet struct {
 	CmdType   uint16
 	SrcHashID [32]byte // 源节点ID
 	DstHashID [32]byte // 目的节点ID
-	//DataLen   uint32
-	DataLen uint64
-	Data    []byte
+	DataLen   uint64
+	Data      []byte
 }
 
 // ResolveData 解析Packet Data字段的数据为特定格式的数据包
