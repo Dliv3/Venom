@@ -89,8 +89,8 @@ func ShowUsage() {
   listen   [port]                        Listen on a port on the target node.
   connect  [ip] [port]                   Connect to a new node through current node.
   socks    [lport]                       Start a socks server.
-  lforward [port]    [id:port]           Forward a local port to a remote port.
-  rforward [id:port]    [port]           Forward a remote port to a local port.
+  lforward [sport] [dport]               Forward a local sport to a remote dport.
+  rforward [sport] [dport]               Forward a remote sport to a local dport.
   shell                                  Start an interactive shell.
   upload   [local_file]  [remote_file]   Upload file to the target node.
   download [remote_file]  [local_file]   Download file from the target node.

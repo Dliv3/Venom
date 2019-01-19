@@ -145,7 +145,7 @@ func Interactive() {
 				fmt.Println("port number error")
 				break
 			}
-			// dispather.SendSocks5Cmd(peerNode, port)
+			dispather.SendSocks5Cmd(peerNode, port)
 		case "shell":
 			if !checkCurrentPeerNode() {
 				break
@@ -173,6 +173,24 @@ func Interactive() {
 			fmt.Scanf("%s %s", &remotePath, &localPath)
 			fmt.Println("path", remotePath, localPath)
 			dispather.SendDownloadCmd(peerNode, remotePath, localPath)
+		case "lforward":
+			if !checkCurrentPeerNode() {
+				break
+			}
+			var sport uint16
+			var dport uint16
+			fmt.Scanf("%d %d", &sport, &dport)
+			fmt.Printf("forward local port %d to remote port %d\n", sport, dport)
+			// dispather.SendLForwardCmd(peerNode, sport, dport)
+		case "rforward":
+			if !checkCurrentPeerNode() {
+				break
+			}
+			var sport uint16
+			var dport uint16
+			fmt.Scanf("%d %d", &sport, &dport)
+			fmt.Printf("forward remote port %d to local port %d\n", sport, dport)
+			// dispather.SendRForwardCmd(peerNode, sport, dport)
 		case "exit":
 			os.Exit(0)
 		default:

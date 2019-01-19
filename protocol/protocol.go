@@ -136,6 +136,18 @@ type ConnectPacketRet struct {
 	Msg     []byte // 如果成功则为空, 否则为错误信息
 }
 
+type ShellPacketCmd struct {
+	Start  uint16 // 启动shell
+	CmdLen uint32 // 要执行的命令
+	Cmd    []byte // 执行命令的长度
+}
+
+type ShellPacketRet struct {
+	Success uint16 // 操作是否成功， 1 or 0
+	DataLen uint32 // 返回的信息长度
+	Data    []byte // 如果成功则为空, 否则为错误信息
+}
+
 type Socks5ControlPacketCmd struct {
 	Start     uint16 // 启动一个socks5连接/关闭这个socks5连接，针对一个TCP连接而言
 	SessionID uint16
@@ -153,14 +165,13 @@ type Socks5DataPacket struct {
 	Close   uint16 // 1表示连接关闭
 }
 
-type ShellPacketCmd struct {
-	Start  uint16 // 启动shell
-	CmdLen uint32 // 要执行的命令
-	Cmd    []byte // 执行命令的长度
-}
+// type NetForwardPacketCmd struct {
+// }
 
-type ShellPacketRet struct {
-	Success uint16 // 操作是否成功， 1 or 0
-	DataLen uint32 // 返回的信息长度
-	Data    []byte // 如果成功则为空, 否则为错误信息
-}
+// type NetForwardPacketRet struct {
+// }
+
+// type NetForwardDataPacket struct {
+// 	DataLen uint32
+// 	Data    []byte
+// }

@@ -26,7 +26,7 @@ type Node struct {
 	CommandBuffers map[uint16]*Buffer
 
 	// Socks5 数据信道缓冲区
-	Socks5DataBuffer     [global.SOCKS5_MAX_CONNECTION]*Buffer
+	Socks5DataBuffer     [global.TCP_MAX_CONNECTION]*Buffer
 	Socks5DataBufferLock *sync.RWMutex
 	// Socks5Running bool // 防止admin node在一个agent上开启多个连接
 
@@ -156,7 +156,7 @@ func (node *Node) GetSocks5SessionID() uint16 {
 	node.Socks5SessionIDLock.Lock()
 	defer node.Socks5SessionIDLock.Unlock()
 	id := node.Socks5SessionID
-	node.Socks5SessionID = (node.Socks5SessionID + 1) % global.SOCKS5_MAX_CONNECTION
+	node.Socks5SessionID = (node.Socks5SessionID + 1) % global.TCP_MAX_CONNECTION
 	return id
 }
 

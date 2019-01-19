@@ -5,7 +5,7 @@ package global
 const MAX_PACKET_SIZE = 10240
 
 // 一次最多可以承受7168个连接
-const SOCKS5_MAX_CONNECTION = 7168
+const TCP_MAX_CONNECTION = 7168
 
 // 协议数据分隔符
 const PROTOCOL_SEPARATOR = "TCMD"

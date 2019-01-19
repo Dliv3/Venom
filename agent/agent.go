@@ -25,19 +25,19 @@ func main() {
 	if cli.Args.Mode == cli.LISTEN_MODE {
 		// 监听端口
 		if cli.Args.PortReuse {
-			netio.Init(
+			netio.InitNode(
 				"listen",
 				fmt.Sprintf("%s:%d", cli.Args.LocalIP, uint16(cli.Args.LocalPort)),
 				dispather.AgentServer, true)
 		} else {
-			netio.Init(
+			netio.InitNode(
 				"listen",
 				fmt.Sprintf("0.0.0.0:%d", uint16(cli.Args.LocalPort)),
 				dispather.AgentServer, false)
 		}
 	} else {
 		// 连接端口
-		netio.Init(
+		netio.InitNode(
 			"connect",
 			fmt.Sprintf("%s:%d", cli.Args.RemoteIP, uint16(cli.Args.RemotePort)),
 			dispather.AgentClient, false)

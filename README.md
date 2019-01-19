@@ -16,7 +16,7 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 - upload and download file
 - supports multiple platforms(Linux/Windows/MacOS) and multiple architectures(x86/x64/arm/mips)
 
-> For IoT devices, you can remove port reuse feature to reduce the binary size and reduce the value of SOCKS5_MAX_CONNECTION to reduce memory usage.
+> For IoT devices, you can remove port reuse feature to reduce the binary size and reduce the value of TCP_MAX_CONNECTION to reduce memory usage.
 
 ## Usage
 

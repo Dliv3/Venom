@@ -6,9 +6,11 @@ import (
 	"log"
 	"net"
 	"os"
+	"runtime"
 	"sync"
 
 	"github.com/Dliv3/Venom/global"
+	"github.com/Dliv3/Venom/netio"
 	"github.com/Dliv3/Venom/node"
 	"github.com/Dliv3/Venom/protocol"
 	"github.com/Dliv3/Venom/utils"
@@ -272,13 +274,11 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 		Path:    []byte(remotePath),
 		FileLen: uint64(fileSize),
 	}
-	dataLen, _ := utils.PacketSize(uploadPacketCmd)
 	packetHeader := protocol.PacketHeader{
 		Separator: global.PROTOCOL_SEPARATOR,
 		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
 		DstHashID: utils.UUIDToArray32(peerNode.HashID),
 		CmdType:   protocol.UPLOAD,
-		DataLen:   dataLen,
 	}
 
 	peerNode.WritePacket(packetHeader, uploadPacketCmd)
@@ -400,4 +400,93 @@ func SendShellCmd(peerNode *node.Node) {
 	} else {
 		fmt.Println("something error.")
 	}
+}
+
+// SendSocks5Cmd 启动socks5代理
+func SendSocks5Cmd(peerNode *node.Node, port uint16) bool {
+	err := netio.InitTCP("listen", fmt.Sprintf("0.0.0.0:%d", port), localSocks5Server, peerNode.HashID)
+
+	if err != nil {
+		fmt.Println("socks5 proxy startup error")
+		return false
+	}
+	fmt.Printf("a socks5 proxy of the target node has started up on local port %d\n", port)
+	return true
+}
+
+func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
+	defer conn.Close()
+
+	peerNode := node.Nodes[peerNodeID]
+
+	currentSessionID := node.Nodes[peerNodeID].GetSocks5SessionID()
+
+	defer func() {
+		// Fix Bug : socks5连接不会断开的问题
+		socks5CloseData := protocol.Socks5DataPacket{
+			SessionID: currentSessionID,
+			Close:     1,
+		}
+		packetHeader := protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			CmdType:   protocol.SOCKSDATA,
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+			DstHashID: utils.UUIDToArray32(peerNode.HashID),
+		}
+		peerNode.WritePacket(packetHeader, socks5CloseData)
+
+		node.Nodes[peerNodeID].RealseSocks5DataBuffer(currentSessionID)
+		runtime.GC()
+	}()
+
+	socks5ControlCmd := protocol.Socks5ControlPacketCmd{
+		SessionID: currentSessionID,
+		Start:     1,
+	}
+	packetHeader := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(peerNodeID),
+		CmdType:   protocol.SOCKS,
+	}
+	// send socks5 start command, send session id to socks5 server node
+	node.Nodes[peerNodeID].WritePacket(packetHeader, socks5ControlCmd)
+
+	// ReadPacket From CommandBuffer
+	var packetHeaderRet protocol.PacketHeader
+	var socks5ControlRet protocol.Socks5ControlPacketRet
+	node.CurrentNode.CommandBuffers[protocol.SOCKS].ReadPacket(&packetHeaderRet, &socks5ControlRet)
+
+	if socks5ControlRet.Success == 0 {
+		fmt.Println("socks5 start error On agent")
+		return
+	}
+
+	// start read socks5 data from socks5 client
+	// socks5 data buffer
+	node.Nodes[peerNodeID].NewSocks5DataBuffer(currentSessionID)
+
+	c := make(chan bool)
+
+	// 从node Socks5Buffer中读取数据，发送给客户端
+	go CopyNode2Net(peerNode, conn, currentSessionID, c)
+
+	if err := AdminHandShake(conn, peerNode, currentSessionID); err != nil {
+		fmt.Println("socks handshake:")
+		fmt.Println(err)
+		return
+	}
+	_, err := AdminParseTarget(conn, peerNode, currentSessionID)
+	if err != nil {
+		fmt.Println("socks consult transfer mode or parse target :")
+		fmt.Println(err)
+		return
+	}
+
+	// 从本地socket接收数据，发送给服务端
+	go CopyNet2Node(conn, peerNode, currentSessionID, c)
+
+	// exit
+	<-c
+	<-done
 }

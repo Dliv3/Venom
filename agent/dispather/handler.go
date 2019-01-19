@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"runtime"
 	"sync"
 
 	"github.com/Dliv3/Venom/global"
@@ -50,6 +51,7 @@ func InitAgentHandler() {
 	go handleDownloadCmd()
 	go handleUploadCmd()
 	go handleShellCmd()
+	go handleSocks5Cmd()
 }
 
 func handleSyncCmd() {
@@ -146,7 +148,7 @@ func handleListenCmd() {
 		// 网络拓扑同步完成之后即可直接使用以及构造好的节点结构体
 		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
 
-		err := netio.Init(
+		err := netio.InitNode(
 			"listen",
 			fmt.Sprintf("0.0.0.0:%d", listenPacketCmd.Port),
 			AgentServer, false)
@@ -178,7 +180,7 @@ func handleConnectCmd() {
 
 		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
 
-		err := netio.Init(
+		err := netio.InitNode(
 			"connect",
 			fmt.Sprintf("%s:%d", utils.Uint32ToIp(connectPacketCmd.IP).String(), connectPacketCmd.Port),
 			AgentClient, false)
@@ -366,7 +368,7 @@ func handleUploadCmd() {
 	}
 }
 
-func handleShellCmd() bool {
+func handleShellCmd() {
 
 	for {
 
@@ -440,5 +442,61 @@ func handleShellCmd() bool {
 			DstHashID: packetHeader.SrcHashID,
 		}
 		adminNode.WritePacket(packetHeader, ShellPacketRet)
+	}
+}
+
+// handleSocks5Cmd 从node.CommandBuffers[protocol.SOCKS]中读取命令并处理
+func handleSocks5Cmd() {
+	for {
+		// 启动socks5的命令数据包
+		var packetHeader protocol.PacketHeader
+		var socks5ControlCmd protocol.Socks5ControlPacketCmd
+		node.CurrentNode.CommandBuffers[protocol.SOCKS].ReadPacket(&packetHeader, &socks5ControlCmd)
+
+		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
+
+		// 初始化对应SessionID的Buffer
+		adminNode.NewSocks5DataBuffer(socks5ControlCmd.SessionID)
+
+		// 返回启动成功命令
+		socks5ControlRet := protocol.Socks5ControlPacketRet{
+			Success: 1,
+		}
+		packetHeaderRet := protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			CmdType:   protocol.SOCKS,
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+			DstHashID: packetHeader.SrcHashID,
+		}
+		adminNode.WritePacket(packetHeaderRet, socks5ControlRet)
+
+		go func() {
+			defer func() {
+				socks5CloseData := protocol.Socks5DataPacket{
+					SessionID: socks5ControlCmd.SessionID,
+					Close:     1,
+				}
+				packetHeader := protocol.PacketHeader{
+					Separator: global.PROTOCOL_SEPARATOR,
+					CmdType:   protocol.SOCKSDATA,
+					SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+					DstHashID: utils.UUIDToArray32(adminNode.HashID),
+				}
+				adminNode.WritePacket(packetHeader, socks5CloseData)
+
+				adminNode.RealseSocks5DataBuffer(socks5ControlCmd.SessionID)
+				runtime.GC()
+			}()
+			if err := AgentHandShake(adminNode, socks5ControlCmd.SessionID); err != nil {
+				log.Println("[-]Socks handshake error:", err)
+				return
+			}
+			addr, err := AgentParseTarget(adminNode, socks5ControlCmd.SessionID)
+			if err != nil {
+				log.Println("[-]Socks consult transfer mode or parse target error:", err)
+				return
+			}
+			PipeWhenClose(adminNode, socks5ControlCmd.SessionID, addr)
+		}()
 	}
 }

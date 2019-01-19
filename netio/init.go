@@ -11,10 +11,12 @@ import (
 	reuseport "github.com/kavu/go_reuseport"
 )
 
-var INIT_TYPE_ERROR = errors.New("Init type error")
+var INIT_TYPE_ERROR = errors.New("init type error")
 
-// func Init(tcpType string, tcpService string, handlerFunc interface{}, portReuse bool) (err error) {
-func Init(tcpType string, tcpService string, handlerFunc func(net.Conn), portReuse bool) (err error) {
+// InitNode 初始化节点间网络连接
+// handleFunc 处理net.Conn的函数
+// portReuse 是否以端口重用的方式初始化网络连接
+func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), portReuse bool) (err error) {
 	if tcpType == "connect" {
 		addr, err := net.ResolveTCPAddr("tcp", tcpService)
 		if err != nil {
@@ -110,4 +112,58 @@ func isAppProtocol(conn net.Conn) (bool, []byte) {
 	} else {
 		return true, protocol
 	}
+}
+
+// InitNode 初始化网络连接
+// peerNodeID 存储需要通信(socks5/端口转发)的对端节点ID
+func InitTCP(tcpType string, tcpService string, handlerFunc func(net.Conn, string, chan bool), peerNodeID string) (err error) {
+	if tcpType == "connect" {
+		addr, err := net.ResolveTCPAddr("tcp", tcpService)
+		if err != nil {
+			log.Println("[-]ResolveTCPAddr Error:", err)
+			return err
+		}
+
+		conn, err := net.DialTCP("tcp", nil, addr)
+		if err != nil {
+			log.Println("[-]DialTCP Error:", err)
+			return err
+		}
+
+		conn.SetKeepAlive(true)
+
+		go handlerFunc(conn, peerNodeID, nil)
+
+		return err
+	} else if tcpType == "listen" {
+		var err error
+		var listener net.Listener
+
+		addr, err := net.ResolveTCPAddr("tcp", tcpService)
+		if err != nil {
+			log.Println("[-]ResolveTCPAddr Error:", err)
+			return err
+		}
+		listener, err = net.ListenTCP("tcp", addr)
+
+		if err != nil {
+			log.Println("[-]ListenTCP Error:", err)
+			return err
+		}
+
+		go func() {
+			c := make(chan bool, global.TCP_MAX_CONNECTION)
+			for {
+				c <- true
+				conn, err := listener.Accept()
+				if err != nil {
+					log.Println("[-]Accept Error:", err)
+					continue
+				}
+				go handlerFunc(conn, peerNodeID, c)
+			}
+		}()
+		return err
+	}
+	return INIT_TYPE_ERROR
 }

@@ -24,12 +24,12 @@ func main() {
 	node.CurrentNode.InitCommandBuffer()
 
 	if cli.Args.Mode == cli.CONNECT_MODE {
-		netio.Init(
+		netio.InitNode(
 			"connect",
 			fmt.Sprintf("%s:%d", cli.Args.RemoteIP, uint16(cli.Args.RemotePort)),
 			dispather.AdminClient, false)
 	} else {
-		netio.Init(
+		netio.InitNode(
 			"listen",
 			fmt.Sprintf("0.0.0.0:%d", uint16(cli.Args.LocalPort)),
 			dispather.AdminServer, false)
