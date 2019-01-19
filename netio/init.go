@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Dliv3/Venom/global"
-	reuseport "github.com/kavu/go_reuseport"
+	reuseport "github.com/libp2p/go-reuseport"
 )
 
 var INIT_TYPE_ERROR = errors.New("init type error")
