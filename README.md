@@ -26,7 +26,6 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 
 - combined with regeorg
 - multiple administrator nodes
-- support third party plugins
 - network traffic encryption
 - RESTful API
 - combined with meterpreter (to be discussed)
