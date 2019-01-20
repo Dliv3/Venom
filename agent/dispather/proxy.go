@@ -41,7 +41,7 @@ func AgentHandShake(peerNode *node.Node, currentSessionID uint16) (err error) {
 
 	var n int
 
-	buf, err := peerNode.GetSocks5DataBuffer(currentSessionID).ReadBytes()
+	buf, err := peerNode.DataBuffers[protocol.SOCKSDATA].GetDataBuffer(currentSessionID).ReadBytes()
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func AgentHandShake(peerNode *node.Node, currentSessionID uint16) (err error) {
 	if n == msgLen {               // handshake done, common case
 		// do nothing, jump directly to send confirmation
 	} else if n < msgLen { // has more methods to read, rare case
-		buf, err = peerNode.GetSocks5DataBuffer(currentSessionID).ReadBytes()
+		buf, err = peerNode.DataBuffers[protocol.SOCKSDATA].GetDataBuffer(currentSessionID).ReadBytes()
 		if err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func AgentParseTarget(peerNode *node.Node, currentSessionID uint16) (host string
 	// 	return
 	// }
 
-	buf, err := peerNode.GetSocks5DataBuffer(currentSessionID).ReadBytes()
+	buf, err := peerNode.DataBuffers[protocol.SOCKSDATA].GetDataBuffer(currentSessionID).ReadBytes()
 	if err != nil {
 		return
 	}
@@ -171,7 +171,7 @@ func AgentParseTarget(peerNode *node.Node, currentSessionID uint16) (host string
 		// 	return
 		// }
 		var tmp []byte
-		tmp, err = peerNode.GetSocks5DataBuffer(currentSessionID).ReadBytes()
+		tmp, err = peerNode.DataBuffers[protocol.SOCKSDATA].GetDataBuffer(currentSessionID).ReadBytes()
 		if err != nil {
 			return
 		}

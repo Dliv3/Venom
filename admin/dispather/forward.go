@@ -99,7 +99,7 @@ func CopyNet2Node(input net.Conn, output *node.Node, currentSessionID uint16, c 
 
 func CopyNode2Net(input *node.Node, output net.Conn, currentSessionID uint16, c chan bool) {
 	for {
-		data, err := input.GetSocks5DataBuffer(currentSessionID).ReadBytes()
+		data, err := input.DataBuffers[protocol.SOCKSDATA].GetDataBuffer(currentSessionID).ReadBytes()
 		if err != nil {
 			c <- true
 			break

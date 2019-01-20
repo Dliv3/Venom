@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -129,10 +130,15 @@ func Interactive() {
 			if !checkCurrentPeerNode() {
 				break
 			}
-			var ip string
+			var ipString string
 			var port uint16
-			fmt.Scanf("%s %d", &ip, &port)
-			fmt.Println("ip port", ip, port)
+			fmt.Scanf("%s %d", &ipString, &port)
+			fmt.Println("ip port", ipString, port)
+			ip := net.ParseIP(ipString)
+			if ip == nil {
+				fmt.Println("invalid ip address.")
+				break
+			}
 			dispather.SendConnectCmd(peerNode, ip, port)
 		case "socks":
 			if !checkCurrentPeerNode() {

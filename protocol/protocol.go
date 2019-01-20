@@ -24,6 +24,8 @@ const (
 	SOCKS
 	// 数据传输协议
 	SOCKSDATA
+	LFORWARDDATA
+	RFORWARDDATA
 )
 
 // Packet 是较为低层的数据包格式

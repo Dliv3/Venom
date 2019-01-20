@@ -22,6 +22,7 @@ func main() {
 
 	node.CurrentNode.IsAdmin = 1
 	node.CurrentNode.InitCommandBuffer()
+	node.CurrentNode.InitDataBuffer()
 
 	if cli.Args.Mode == cli.CONNECT_MODE {
 		netio.InitNode(

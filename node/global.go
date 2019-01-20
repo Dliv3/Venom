@@ -4,12 +4,12 @@ import "github.com/Dliv3/Venom/utils"
 
 // CurrentNode 当前节点
 var CurrentNode = Node{
-	IsAdmin:             0,
-	HashID:              utils.NewUUID(),
-	Conn:                nil, // 当前节点无需使用Conn
-	ConnReadLock:        nil,
-	ConnWriteLock:       nil,
-	Socks5SessionIDLock: nil,
+	IsAdmin: 0,
+	HashID:  utils.NewUUID(),
+	// Conn:          nil, // 当前节点无需使用Conn
+	// ConnReadLock:  nil,
+	// ConnWriteLock: nil,
+	// Socks5SessionIDLock: nil,
 }
 
 var GNetworkTopology = NetworkTopology{

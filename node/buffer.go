@@ -3,11 +3,12 @@ package node
 import (
 	"errors"
 	"io"
+	"log"
+	"sync"
 
+	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/protocol"
 )
-
-const DATA_BUFFER_SIZE = 4096
 
 type Buffer struct {
 	Chan chan interface{}
@@ -15,7 +16,7 @@ type Buffer struct {
 
 func NewBuffer() *Buffer {
 	return &Buffer{
-		Chan: make(chan interface{}, DATA_BUFFER_SIZE),
+		Chan: make(chan interface{}, global.BUFFER_SIZE),
 	}
 }
 
@@ -74,4 +75,51 @@ func (buffer *Buffer) WriteCloseMessage() {
 	if buffer != nil {
 		buffer.Chan <- io.EOF
 	}
+}
+
+type DataBuffer struct {
+	// 数据信道缓冲区
+	DataBuffer     [global.TCP_MAX_CONNECTION]*Buffer
+	DataBufferLock *sync.RWMutex
+
+	// Session ID
+	SessionID     uint16
+	SessionIDLock *sync.Mutex
+}
+
+func NewDataBuffer() *DataBuffer {
+	return &DataBuffer{
+		SessionIDLock:  &sync.Mutex{},
+		DataBufferLock: &sync.RWMutex{},
+	}
+}
+
+func (dataBuffer *DataBuffer) GetDataBuffer(sessionID uint16) *Buffer {
+	if int(sessionID) > len(dataBuffer.DataBuffer) {
+		log.Println("[-]DataBuffer sessionID error: ", sessionID)
+		return nil
+	}
+	dataBuffer.DataBufferLock.RLock()
+	defer dataBuffer.DataBufferLock.RUnlock()
+	return dataBuffer.DataBuffer[sessionID]
+}
+
+func (dataBuffer *DataBuffer) NewDataBuffer(sessionID uint16) {
+	dataBuffer.DataBufferLock.Lock()
+	defer dataBuffer.DataBufferLock.Unlock()
+	dataBuffer.DataBuffer[sessionID] = NewBuffer()
+}
+
+func (dataBuffer *DataBuffer) RealseDataBuffer(sessionID uint16) {
+	dataBuffer.DataBufferLock.Lock()
+	defer dataBuffer.DataBufferLock.Unlock()
+	dataBuffer.DataBuffer[sessionID] = nil
+}
+
+func (dataBuffer *DataBuffer) GetSessionID() uint16 {
+	dataBuffer.SessionIDLock.Lock()
+	defer dataBuffer.SessionIDLock.Unlock()
+	id := dataBuffer.SessionID
+	dataBuffer.SessionID = (dataBuffer.SessionID + 1) % global.TCP_MAX_CONNECTION
+	return id
 }

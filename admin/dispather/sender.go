@@ -67,13 +67,14 @@ func SendSyncCmd() {
 	for key, value := range node.GNetworkTopology.RouteTable {
 		if _, ok := node.Nodes[key]; !ok {
 			node.Nodes[key] = &node.Node{
-				HashID:               key,
-				Conn:                 node.Nodes[value].Conn,
-				ConnReadLock:         &sync.Mutex{},
-				ConnWriteLock:        &sync.Mutex{},
-				Socks5SessionIDLock:  &sync.Mutex{},
-				Socks5DataBufferLock: &sync.RWMutex{},
+				HashID:        key,
+				Conn:          node.Nodes[value].Conn,
+				ConnReadLock:  &sync.Mutex{},
+				ConnWriteLock: &sync.Mutex{},
+				// Socks5SessionIDLock:  &sync.Mutex{},
+				// Socks5DataBufferLock: &sync.RWMutex{},
 			}
+			node.Nodes[key].InitDataBuffer()
 		}
 	}
 
@@ -105,9 +106,9 @@ func SendListenCmd(peerNode *node.Node, port uint16) {
 }
 
 // SendConnectCmd 发送连接命令
-func SendConnectCmd(peerNode *node.Node, ip string, port uint16) {
+func SendConnectCmd(peerNode *node.Node, ip net.IP, port uint16) {
 	connectPacketCmd := protocol.ConnectPacketCmd{
-		IP:   utils.IpToUint32(net.ParseIP(ip)),
+		IP:   utils.IpToUint32(ip),
 		Port: port,
 	}
 	packetHeader := protocol.PacketHeader{
@@ -418,7 +419,7 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
 
 	peerNode := node.Nodes[peerNodeID]
 
-	currentSessionID := node.Nodes[peerNodeID].GetSocks5SessionID()
+	currentSessionID := node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].GetSessionID()
 
 	defer func() {
 		// Fix Bug : socks5连接不会断开的问题
@@ -434,7 +435,7 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
 		}
 		peerNode.WritePacket(packetHeader, socks5CloseData)
 
-		node.Nodes[peerNodeID].RealseSocks5DataBuffer(currentSessionID)
+		node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].RealseDataBuffer(currentSessionID)
 		runtime.GC()
 	}()
 
@@ -463,7 +464,7 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
 
 	// start read socks5 data from socks5 client
 	// socks5 data buffer
-	node.Nodes[peerNodeID].NewSocks5DataBuffer(currentSessionID)
+	node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].NewDataBuffer(currentSessionID)
 
 	c := make(chan bool)
 

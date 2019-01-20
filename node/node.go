@@ -14,9 +14,9 @@ import (
 
 // Node 节点
 type Node struct {
-	IsAdmin uint16   // 对方Node是否是Admin(保留字段，目前没什么用)
-	HashID  string   // 对方Node的HashID
-	Conn    net.Conn // 与对方Node的TCP连接
+	IsAdmin uint16   // Node是否是Admin
+	HashID  string   // Node的HashID
+	Conn    net.Conn // 与Node的TCP连接
 
 	// Conn的锁，因为Conn读写Packet的时候如果不加锁，多个routine会出现乱序的情况
 	ConnReadLock  *sync.Mutex
@@ -25,17 +25,13 @@ type Node struct {
 	// 控制信道缓冲区
 	CommandBuffers map[uint16]*Buffer
 
-	// Socks5 数据信道缓冲区
-	Socks5DataBuffer     [global.TCP_MAX_CONNECTION]*Buffer
-	Socks5DataBufferLock *sync.RWMutex
-	// Socks5Running bool // 防止admin node在一个agent上开启多个连接
-
-	// Socks5 Session
-	Socks5SessionID     uint16
-	Socks5SessionIDLock *sync.Mutex
+	// 数据信道缓冲区
+	DataBuffers map[uint16]*DataBuffer
 
 	// 是否与本节点直接连接
 	DirectConnection bool
+
+	// Socks5Running bool // 防止admin node在一个agent上开启多个连接
 }
 
 // CommandHandler 协议数据包，将协议数据包分类写入Buffer
@@ -70,13 +66,13 @@ func (node *Node) CommandHandler(peerNode *Node) {
 					var socks5Data protocol.Socks5DataPacket
 					lowLevelPacket.ResolveData(&socks5Data)
 					peerNodeID := utils.Array32ToUUID(lowLevelPacket.SrcHashID)
-					if Nodes[peerNodeID].GetSocks5DataBuffer(socks5Data.SessionID) != nil {
+					if Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].GetDataBuffer(socks5Data.SessionID) != nil {
 						if socks5Data.Close == 1 {
 							// Fix Bug : socks5连接不会断开的问题
-							Nodes[peerNodeID].GetSocks5DataBuffer(socks5Data.SessionID).WriteCloseMessage()
+							Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].GetDataBuffer(socks5Data.SessionID).WriteCloseMessage()
 						} else {
 							// 只将数据写入数据buffer，不写入整个packet
-							Nodes[peerNodeID].GetSocks5DataBuffer(socks5Data.SessionID).WriteBytes(socks5Data.Data)
+							Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].GetDataBuffer(socks5Data.SessionID).WriteBytes(socks5Data.Data)
 						}
 					}
 				default:
@@ -117,6 +113,14 @@ func (node *Node) InitCommandBuffer() {
 	node.CommandBuffers[protocol.SHELL] = NewBuffer()
 }
 
+func (node *Node) InitDataBuffer() {
+	node.DataBuffers = make(map[uint16]*DataBuffer)
+
+	node.DataBuffers[protocol.SOCKSDATA] = NewDataBuffer()
+	node.DataBuffers[protocol.LFORWARDDATA] = NewDataBuffer()
+	node.DataBuffers[protocol.RFORWARDDATA] = NewDataBuffer()
+}
+
 // TODO 只有与断掉节点之间相连的节点才会清理路由表/网络拓扑表/节点标号等
 // 暂无法做到对全网所有节点的如下信息进行清理，这样有些麻烦，暂时也不是刚需
 func (node *Node) Disconnect() {
@@ -127,37 +131,6 @@ func (node *Node) Disconnect() {
 	delete(Nodes, node.HashID)
 	// 删除结构体
 	node = nil
-}
-
-func (node *Node) GetSocks5DataBuffer(sessionID uint16) *Buffer {
-	if int(sessionID) > len(node.Socks5DataBuffer) {
-		log.Println("[-]Socks5 sessionID error: ", sessionID)
-		return nil
-	}
-	node.Socks5DataBufferLock.RLock()
-	defer node.Socks5DataBufferLock.RUnlock()
-	return node.Socks5DataBuffer[sessionID]
-}
-
-func (node *Node) NewSocks5DataBuffer(sessionID uint16) {
-	node.Socks5DataBufferLock.Lock()
-	defer node.Socks5DataBufferLock.Unlock()
-	node.Socks5DataBuffer[sessionID] = &Buffer{
-		Chan: make(chan interface{}, DATA_BUFFER_SIZE)}
-}
-
-func (node *Node) RealseSocks5DataBuffer(sessionID uint16) {
-	node.Socks5DataBufferLock.Lock()
-	defer node.Socks5DataBufferLock.Unlock()
-	node.Socks5DataBuffer[sessionID] = nil
-}
-
-func (node *Node) GetSocks5SessionID() uint16 {
-	node.Socks5SessionIDLock.Lock()
-	defer node.Socks5SessionIDLock.Unlock()
-	id := node.Socks5SessionID
-	node.Socks5SessionID = (node.Socks5SessionID + 1) % global.TCP_MAX_CONNECTION
-	return id
 }
 
 func (node *Node) ReadLowLevelPacket(packet interface{}) error {

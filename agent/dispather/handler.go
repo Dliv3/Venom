@@ -105,13 +105,14 @@ func handleSyncCmd() {
 		for key, value := range node.GNetworkTopology.RouteTable {
 			if _, ok := node.Nodes[key]; !ok {
 				node.Nodes[key] = &node.Node{
-					HashID:               key,
-					Conn:                 node.Nodes[value].Conn,
-					ConnReadLock:         &sync.Mutex{},
-					ConnWriteLock:        &sync.Mutex{},
-					Socks5SessionIDLock:  &sync.Mutex{},
-					Socks5DataBufferLock: &sync.RWMutex{},
+					HashID:        key,
+					Conn:          node.Nodes[value].Conn,
+					ConnReadLock:  &sync.Mutex{},
+					ConnWriteLock: &sync.Mutex{},
+					// Socks5SessionIDLock:  &sync.Mutex{},
+					// Socks5DataBufferLock: &sync.RWMutex{},
 				}
+				node.Nodes[key].InitDataBuffer()
 			}
 		}
 
@@ -456,7 +457,7 @@ func handleSocks5Cmd() {
 		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
 
 		// 初始化对应SessionID的Buffer
-		adminNode.NewSocks5DataBuffer(socks5ControlCmd.SessionID)
+		adminNode.DataBuffers[protocol.SOCKSDATA].NewDataBuffer(socks5ControlCmd.SessionID)
 
 		// 返回启动成功命令
 		socks5ControlRet := protocol.Socks5ControlPacketRet{
@@ -484,7 +485,7 @@ func handleSocks5Cmd() {
 				}
 				adminNode.WritePacket(packetHeader, socks5CloseData)
 
-				adminNode.RealseSocks5DataBuffer(socks5ControlCmd.SessionID)
+				adminNode.DataBuffers[protocol.SOCKSDATA].RealseDataBuffer(socks5ControlCmd.SessionID)
 				runtime.GC()
 			}()
 			if err := AgentHandShake(adminNode, socks5ControlCmd.SessionID); err != nil {

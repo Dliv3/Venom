@@ -17,6 +17,7 @@ func main() {
 
 	node.CurrentNode.IsAdmin = 0
 	node.CurrentNode.InitCommandBuffer()
+	node.CurrentNode.InitDataBuffer()
 
 	// fmt.Println(node.CurrentNode.HashID)
 
