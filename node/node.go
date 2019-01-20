@@ -34,6 +34,19 @@ type Node struct {
 	// Socks5Running bool // 防止admin node在一个agent上开启多个连接
 }
 
+func NewNode(isAdmin uint16, hashID string, conn net.Conn, directConnection bool) *Node {
+	newNode := &Node{
+		HashID:           hashID,
+		IsAdmin:          isAdmin,
+		Conn:             conn,
+		ConnReadLock:     &sync.Mutex{},
+		ConnWriteLock:    &sync.Mutex{},
+		DirectConnection: directConnection,
+	}
+	newNode.InitDataBuffer()
+	return newNode
+}
+
 // CommandHandler 协议数据包，将协议数据包分类写入Buffer
 func (node *Node) CommandHandler(peerNode *Node) {
 	defer peerNode.Disconnect()

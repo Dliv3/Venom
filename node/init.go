@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"net"
-	"sync"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/netio"
@@ -45,17 +44,24 @@ func ServerInitConnection(conn net.Conn) (bool, *Node) {
 	netio.WritePacket(conn, PacketHeader)
 	netio.WritePacket(conn, initPacketRet)
 
-	clientNode := &Node{
-		HashID:        utils.Array32ToUUID(initPacketCmd.HashID),
-		IsAdmin:       initPacketCmd.IsAdmin,
-		Conn:          conn,
-		ConnReadLock:  &sync.Mutex{},
-		ConnWriteLock: &sync.Mutex{},
-		// Socks5SessionIDLock:  &sync.Mutex{},
-		// Socks5DataBufferLock: &sync.RWMutex{},
-		DirectConnection: true,
-	}
-	clientNode.InitDataBuffer()
+	// clientNode := &Node{
+	// 	HashID:        utils.Array32ToUUID(initPacketCmd.HashID),
+	// 	IsAdmin:       initPacketCmd.IsAdmin,
+	// 	Conn:          conn,
+	// 	ConnReadLock:  &sync.Mutex{},
+	// 	ConnWriteLock: &sync.Mutex{},
+	// 	// Socks5SessionIDLock:  &sync.Mutex{},
+	// 	// Socks5DataBufferLock: &sync.RWMutex{},
+	// 	DirectConnection: true,
+	// }
+	// clientNode.InitDataBuffer()
+
+	clientNode := NewNode(
+		initPacketCmd.IsAdmin,
+		utils.Array32ToUUID(initPacketCmd.HashID),
+		conn,
+		true,
+	)
 
 	Nodes[utils.Array32ToUUID(initPacketCmd.HashID)] = clientNode
 	clientNodeID := utils.Array32ToUUID(initPacketCmd.HashID)
@@ -98,17 +104,24 @@ func ClentInitConnection(conn net.Conn) (bool, *Node) {
 	var initPacketRet protocol.InitPacketRet
 	netio.ReadPacket(conn, &initPacketRet)
 	// 新建节点加入map
-	serverNode := &Node{
-		HashID:        utils.Array32ToUUID(initPacketRet.HashID),
-		IsAdmin:       initPacketRet.IsAdmin,
-		Conn:          conn,
-		ConnReadLock:  &sync.Mutex{},
-		ConnWriteLock: &sync.Mutex{},
-		// Socks5SessionIDLock:  &sync.Mutex{},
-		// Socks5DataBufferLock: &sync.RWMutex{},
-		DirectConnection: true,
-	}
-	serverNode.InitDataBuffer()
+	// serverNode := &Node{
+	// 	HashID:        utils.Array32ToUUID(initPacketRet.HashID),
+	// 	IsAdmin:       initPacketRet.IsAdmin,
+	// 	Conn:          conn,
+	// 	ConnReadLock:  &sync.Mutex{},
+	// 	ConnWriteLock: &sync.Mutex{},
+	// 	// Socks5SessionIDLock:  &sync.Mutex{},
+	// 	// Socks5DataBufferLock: &sync.RWMutex{},
+	// 	DirectConnection: true,
+	// }
+	// serverNode.InitDataBuffer()
+
+	serverNode := NewNode(
+		initPacketRet.IsAdmin,
+		utils.Array32ToUUID(initPacketRet.HashID),
+		conn,
+		true,
+	)
 
 	Nodes[utils.Array32ToUUID(initPacketRet.HashID)] = serverNode
 

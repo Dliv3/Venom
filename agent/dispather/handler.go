@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"sync"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/netio"
@@ -104,15 +103,22 @@ func handleSyncCmd() {
 		// 创建Node结构体
 		for key, value := range node.GNetworkTopology.RouteTable {
 			if _, ok := node.Nodes[key]; !ok {
-				node.Nodes[key] = &node.Node{
-					HashID:        key,
-					Conn:          node.Nodes[value].Conn,
-					ConnReadLock:  &sync.Mutex{},
-					ConnWriteLock: &sync.Mutex{},
-					// Socks5SessionIDLock:  &sync.Mutex{},
-					// Socks5DataBufferLock: &sync.RWMutex{},
-				}
-				node.Nodes[key].InitDataBuffer()
+				// node.Nodes[key] = &node.Node{
+				// 	HashID:        key,
+				// 	Conn:          node.Nodes[value].Conn,
+				// 	ConnReadLock:  &sync.Mutex{},
+				// 	ConnWriteLock: &sync.Mutex{},
+				// 	// Socks5SessionIDLock:  &sync.Mutex{},
+				// 	// Socks5DataBufferLock: &sync.RWMutex{},
+				// }
+				// node.Nodes[key].InitDataBuffer()
+
+				node.Nodes[key] = node.NewNode(
+					0,
+					key,
+					node.Nodes[value].Conn,
+					false,
+				)
 			}
 		}
 
