@@ -116,7 +116,7 @@ func isAppProtocol(conn net.Conn) (bool, []byte) {
 
 // InitNode 初始化网络连接
 // peerNodeID 存储需要通信(socks5/端口转发)的对端节点ID
-func InitTCP(tcpType string, tcpService string, handlerFunc func(net.Conn, string, chan bool), peerNodeID string) (err error) {
+func InitTCP(tcpType string, tcpService string, peerNodeID string, handlerFunc func(net.Conn, string, chan bool, ...interface{}), args ...interface{}) (err error) {
 	if tcpType == "connect" {
 		addr, err := net.ResolveTCPAddr("tcp", tcpService)
 		if err != nil {
@@ -132,7 +132,7 @@ func InitTCP(tcpType string, tcpService string, handlerFunc func(net.Conn, strin
 
 		conn.SetKeepAlive(true)
 
-		go handlerFunc(conn, peerNodeID, nil)
+		go handlerFunc(conn, peerNodeID, nil, args)
 
 		return err
 	} else if tcpType == "listen" {
@@ -160,7 +160,7 @@ func InitTCP(tcpType string, tcpService string, handlerFunc func(net.Conn, strin
 					log.Println("[-]Accept error:", err)
 					continue
 				}
-				go handlerFunc(conn, peerNodeID, c)
+				go handlerFunc(conn, peerNodeID, c, args)
 			}
 		}()
 		return err

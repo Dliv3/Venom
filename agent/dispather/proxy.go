@@ -75,7 +75,7 @@ func AgentHandShake(peerNode *node.Node, currentSessionID uint16) (err error) {
 	// send confirmation: version 5, no authentication required
 	// _, err = conn.Write([]byte{socksVer5, 0})
 	buf = []byte{socksVer5, 0}
-	socks5Data := protocol.Socks5DataPacket{
+	socks5Data := protocol.NetDataPacket{
 		SessionID: currentSessionID,
 		DataLen:   uint32(len(buf)),
 		Data:      buf,
@@ -250,7 +250,7 @@ func PipeWhenClose(peerNode *node.Node, currentSessionID uint16, target string) 
 	rep[pindex] = byte((tcpAddr.Port >> 8) & 0xff)
 	rep[pindex+1] = byte(tcpAddr.Port & 0xff)
 	// conn.Write(rep[0 : pindex+2])
-	socks5Data := protocol.Socks5DataPacket{
+	socks5Data := protocol.NetDataPacket{
 		SessionID: currentSessionID,
 		DataLen:   uint32(pindex + 2),
 		Data:      rep[0 : pindex+2],
@@ -272,10 +272,10 @@ func PipeWhenClose(peerNode *node.Node, currentSessionID uint16, target string) 
 	c := make(chan bool)
 
 	// Copy local to remote
-	go CopyNode2Net(peerNode, remoteConn, currentSessionID, c)
+	go node.CopyNode2Net(peerNode, remoteConn, currentSessionID, protocol.SOCKSDATA, c)
 
 	// Copy remote to local
-	go CopyNet2Node(remoteConn, peerNode, currentSessionID, c)
+	go node.CopyNet2Node(remoteConn, peerNode, currentSessionID, protocol.SOCKSDATA, c)
 
 	<-c
 }

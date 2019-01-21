@@ -74,18 +74,25 @@ func (node *Node) CommandHandler(peerNode *Node) {
 				case protocol.DOWNLOAD:
 					fallthrough
 				case protocol.SOCKS:
+					fallthrough
+				case protocol.LFORWARD:
+					fallthrough
+				case protocol.RFORWARD:
 					node.CommandBuffers[lowLevelPacket.CmdType].WriteLowLevelPacket(lowLevelPacket)
 				case protocol.SOCKSDATA:
-					var socks5Data protocol.Socks5DataPacket
-					lowLevelPacket.ResolveData(&socks5Data)
+					fallthrough
+				case protocol.LFORWARDDATA:
+					fallthrough
+				case protocol.RFORWARDDATA:
+					var data protocol.NetDataPacket
+					lowLevelPacket.ResolveData(&data)
 					peerNodeID := utils.Array32ToUUID(lowLevelPacket.SrcHashID)
-					if Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].GetDataBuffer(socks5Data.SessionID) != nil {
-						if socks5Data.Close == 1 {
-							// Fix Bug : socks5连接不会断开的问题
-							Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].GetDataBuffer(socks5Data.SessionID).WriteCloseMessage()
+					if Nodes[peerNodeID].DataBuffers[lowLevelPacket.CmdType].GetDataBuffer(data.SessionID) != nil {
+						if data.Close == 1 {
+							Nodes[peerNodeID].DataBuffers[lowLevelPacket.CmdType].GetDataBuffer(data.SessionID).WriteCloseMessage()
 						} else {
 							// 只将数据写入数据buffer，不写入整个packet
-							Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].GetDataBuffer(socks5Data.SessionID).WriteBytes(socks5Data.Data)
+							Nodes[peerNodeID].DataBuffers[lowLevelPacket.CmdType].GetDataBuffer(data.SessionID).WriteBytes(data.Data)
 						}
 					}
 				default:
@@ -124,6 +131,8 @@ func (node *Node) InitCommandBuffer() {
 	node.CommandBuffers[protocol.UPLOAD] = NewBuffer()
 	node.CommandBuffers[protocol.DOWNLOAD] = NewBuffer()
 	node.CommandBuffers[protocol.SHELL] = NewBuffer()
+	node.CommandBuffers[protocol.LFORWARD] = NewBuffer()
+	node.CommandBuffers[protocol.RFORWARD] = NewBuffer()
 }
 
 func (node *Node) InitDataBuffer() {

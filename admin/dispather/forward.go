@@ -2,7 +2,6 @@ package dispather
 
 import (
 	"io"
-	"net"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/node"
@@ -62,50 +61,5 @@ func CopyNode2Stdout(input *node.Node, output io.Writer, c chan bool) {
 	c <- true
 	// fmt.Println("CopyNode2Stdout Exit")
 
-	return
-}
-
-func CopyNet2Node(input net.Conn, output *node.Node, currentSessionID uint16, c chan bool) {
-	buf := make([]byte, global.MAX_PACKET_SIZE-8)
-	for {
-		count, err := input.Read(buf)
-		socks5Data := protocol.Socks5DataPacket{
-			SessionID: currentSessionID,
-			DataLen:   uint32(count),
-			Data:      buf[:count],
-		}
-		size, _ := utils.PacketSize(socks5Data)
-		packetHeader := protocol.PacketHeader{
-			Separator: global.PROTOCOL_SEPARATOR,
-			CmdType:   protocol.SOCKSDATA,
-			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-			DstHashID: utils.UUIDToArray32(output.HashID),
-			DataLen:   size,
-		}
-		if err != nil {
-			if count > 0 {
-				output.WritePacket(packetHeader, socks5Data)
-			}
-			c <- true
-			break
-		}
-		if count > 0 {
-			output.WritePacket(packetHeader, socks5Data)
-		}
-	}
-	c <- true
-	return
-}
-
-func CopyNode2Net(input *node.Node, output net.Conn, currentSessionID uint16, c chan bool) {
-	for {
-		data, err := input.DataBuffers[protocol.SOCKSDATA].GetDataBuffer(currentSessionID).ReadBytes()
-		if err != nil {
-			c <- true
-			break
-		}
-		output.Write(data)
-	}
-	c <- true
 	return
 }

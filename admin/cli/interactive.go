@@ -139,7 +139,7 @@ func Interactive() {
 				fmt.Println("invalid ip address.")
 				break
 			}
-			dispather.SendConnectCmd(peerNode, ip, port)
+			dispather.SendConnectCmd(peerNode, ipString, port)
 		case "socks":
 			if !checkCurrentPeerNode() {
 				break
@@ -156,7 +156,7 @@ func Interactive() {
 			if !checkCurrentPeerNode() {
 				break
 			}
-			fmt.Println("You can execute dispather in this shell :D, 'exit' to exit, 'ctrl-c' to kill this shell")
+			fmt.Println("You can execute dispather in this shell :D, 'exit' to exit.")
 			shellExit = false
 			dispather.SendShellCmd(peerNode)
 			shellExit = true
@@ -185,9 +185,15 @@ func Interactive() {
 			}
 			var sport uint16
 			var dport uint16
-			fmt.Scanf("%d %d", &sport, &dport)
-			fmt.Printf("forward local port %d to remote port %d\n", sport, dport)
-			// dispather.SendLForwardCmd(peerNode, sport, dport)
+			var lhostString string
+			fmt.Scanf("%s %d %d", &lhostString, &sport, &dport)
+			lhost := net.ParseIP(lhostString)
+			if lhost == nil {
+				fmt.Println("invalid ip address.")
+				break
+			}
+			fmt.Printf("forward %s port %d to remote port %d\n", lhostString, sport, dport)
+			dispather.SendLForwardCmd(peerNode, sport, lhostString, dport)
 		case "rforward":
 			if !checkCurrentPeerNode() {
 				break

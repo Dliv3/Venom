@@ -51,6 +51,7 @@ func InitAgentHandler() {
 	go handleUploadCmd()
 	go handleShellCmd()
 	go handleSocks5Cmd()
+	go handleLForwardCmd()
 }
 
 func handleSyncCmd() {
@@ -479,7 +480,7 @@ func handleSocks5Cmd() {
 
 		go func() {
 			defer func() {
-				socks5CloseData := protocol.Socks5DataPacket{
+				socks5CloseData := protocol.NetDataPacket{
 					SessionID: socks5ControlCmd.SessionID,
 					Close:     1,
 				}
@@ -506,4 +507,94 @@ func handleSocks5Cmd() {
 			PipeWhenClose(adminNode, socks5ControlCmd.SessionID, addr)
 		}()
 	}
+}
+
+func handleLForwardCmd() {
+	for {
+		var packetHeader protocol.PacketHeader
+		var lforwardPacketCmd protocol.NetLForwardPacketCmd
+		node.CurrentNode.CommandBuffers[protocol.LFORWARD].ReadPacket(&packetHeader, &lforwardPacketCmd)
+
+		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
+
+		dport := lforwardPacketCmd.DstPort
+
+		err := netio.InitTCP(
+			"listen",
+			fmt.Sprintf("0.0.0.0:%d", dport),
+			adminNode.HashID,
+			localLForwardServer,
+			lforwardPacketCmd.LHost,
+			lforwardPacketCmd.SrcPort,
+		)
+
+		lforwardPacketRet := protocol.NetLForwardPacketRet{
+			SessionID: 0,
+			Success:   1,
+		}
+		packetHeaderRet := protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+			DstHashID: utils.UUIDToArray32(adminNode.HashID),
+			CmdType:   protocol.LFORWARD,
+		}
+
+		if err != nil {
+			log.Println("[-]LForward tcp listen error")
+			lforwardPacketRet.Success = 0
+			node.Nodes[adminNode.HashID].WritePacket(packetHeaderRet, lforwardPacketRet)
+		}
+	}
+}
+
+func localLForwardServer(conn net.Conn, peerNodeID string, done chan bool, args ...interface{}) {
+	// fmt.Println("localLForwardServer")
+	defer conn.Close()
+	adminNode := node.Nodes[peerNodeID]
+	currentSessionID := adminNode.DataBuffers[protocol.LFORWARDDATA].GetSessionID()
+
+	defer func() {
+		lforwardDataPacketCloseData := protocol.NetDataPacket{
+			SessionID: currentSessionID,
+			Close:     1,
+		}
+		packetHeader := protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			CmdType:   protocol.LFORWARDDATA,
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+			DstHashID: utils.UUIDToArray32(adminNode.HashID),
+		}
+		adminNode.WritePacket(packetHeader, lforwardDataPacketCloseData)
+
+		adminNode.DataBuffers[protocol.LFORWARDDATA].RealseDataBuffer(currentSessionID)
+		runtime.GC()
+	}()
+
+	adminNode.DataBuffers[protocol.LFORWARDDATA].NewDataBuffer(currentSessionID)
+
+	lforwardPacketRet := protocol.NetLForwardPacketRet{
+		SessionID: currentSessionID,
+		Success:   1,
+		LHost:     args[0].([]interface{})[0].(uint32),
+		SrcPort:   args[0].([]interface{})[1].(uint16),
+	}
+	packetHeaderRet := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(adminNode.HashID),
+		CmdType:   protocol.LFORWARD,
+	}
+	adminNode.WritePacket(packetHeaderRet, lforwardPacketRet)
+
+	c := make(chan bool, 2)
+
+	// 从node DataBuffer中读取数据，发送给客户端
+	go node.CopyNet2Node(conn, adminNode, currentSessionID, protocol.LFORWARDDATA, c)
+	go node.CopyNode2Net(adminNode, conn, currentSessionID, protocol.LFORWARDDATA, c)
+
+	// exit
+	<-c
+	<-c
+	<-done
+	// fmt.Println("Done!")
 }

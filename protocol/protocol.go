@@ -22,6 +22,8 @@ const (
 	UPLOAD
 	DOWNLOAD
 	SOCKS
+	LFORWARD
+	RFORWARD
 	// 数据传输协议
 	SOCKSDATA
 	LFORWARDDATA
@@ -159,7 +161,7 @@ type Socks5ControlPacketRet struct {
 	Success uint16 // 启动一个socks5连接/关闭这个socks5连接，针对一个TCP连接而言
 }
 
-type Socks5DataPacket struct {
+type NetDataPacket struct {
 	SessionID uint16 // session id用于标识该数据包属于哪一个TCP连接，因为可能存在并发访问的问题
 	// 在对数据包按命令类型分流之后，还需要对其中的socks5数据包做tcp会话分流
 	DataLen uint32 // 返回的信息长度
@@ -167,13 +169,23 @@ type Socks5DataPacket struct {
 	Close   uint16 // 1表示连接关闭
 }
 
-// type NetForwardPacketCmd struct {
-// }
+type NetLForwardPacketCmd struct {
+	Start   uint16
+	DstPort uint16
+	SrcPort uint16
+	LHost   uint32
+}
 
-// type NetForwardPacketRet struct {
-// }
+type NetLForwardPacketRet struct {
+	Success   uint16
+	SessionID uint16
+	SrcPort   uint16
+	LHost     uint32
+}
 
 // type NetForwardDataPacket struct {
-// 	DataLen uint32
-// 	Data    []byte
+// 	SessionID uint16
+// 	DataLen   uint32
+// 	Data      []byte
+// 	Close     uint16
 // }

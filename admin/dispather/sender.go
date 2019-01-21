@@ -112,9 +112,9 @@ func SendListenCmd(peerNode *node.Node, port uint16) {
 }
 
 // SendConnectCmd 发送连接命令
-func SendConnectCmd(peerNode *node.Node, ip net.IP, port uint16) {
+func SendConnectCmd(peerNode *node.Node, ip string, port uint16) {
 	connectPacketCmd := protocol.ConnectPacketCmd{
-		IP:   utils.IpToUint32(ip),
+		IP:   utils.IpToUint32(net.ParseIP(ip)),
 		Port: port,
 	}
 	packetHeader := protocol.PacketHeader{
@@ -410,7 +410,7 @@ func SendShellCmd(peerNode *node.Node) {
 
 // SendSocks5Cmd 启动socks5代理
 func SendSocks5Cmd(peerNode *node.Node, port uint16) bool {
-	err := netio.InitTCP("listen", fmt.Sprintf("0.0.0.0:%d", port), localSocks5Server, peerNode.HashID)
+	err := netio.InitTCP("listen", fmt.Sprintf("0.0.0.0:%d", port), peerNode.HashID, localSocks5Server)
 
 	if err != nil {
 		fmt.Println("socks5 proxy startup error")
@@ -420,7 +420,7 @@ func SendSocks5Cmd(peerNode *node.Node, port uint16) bool {
 	return true
 }
 
-func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
+func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool, args ...interface{}) {
 	defer conn.Close()
 
 	peerNode := node.Nodes[peerNodeID]
@@ -429,7 +429,7 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
 
 	defer func() {
 		// Fix Bug : socks5连接不会断开的问题
-		socks5CloseData := protocol.Socks5DataPacket{
+		socks5CloseData := protocol.NetDataPacket{
 			SessionID: currentSessionID,
 			Close:     1,
 		}
@@ -464,7 +464,7 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
 	node.CurrentNode.CommandBuffers[protocol.SOCKS].ReadPacket(&packetHeaderRet, &socks5ControlRet)
 
 	if socks5ControlRet.Success == 0 {
-		fmt.Println("socks5 start error On agent")
+		fmt.Println("socks5 start error on agent")
 		return
 	}
 
@@ -475,7 +475,7 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
 	c := make(chan bool)
 
 	// 从node Socks5Buffer中读取数据，发送给客户端
-	go CopyNode2Net(peerNode, conn, currentSessionID, c)
+	go node.CopyNode2Net(peerNode, conn, currentSessionID, protocol.SOCKSDATA, c)
 
 	if err := AdminHandShake(conn, peerNode, currentSessionID); err != nil {
 		fmt.Println("socks handshake:")
@@ -490,9 +490,29 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool) {
 	}
 
 	// 从本地socket接收数据，发送给服务端
-	go CopyNet2Node(conn, peerNode, currentSessionID, c)
+	go node.CopyNet2Node(conn, peerNode, currentSessionID, protocol.SOCKSDATA, c)
 
 	// exit
 	<-c
 	<-done
+}
+
+// SendLForwardCmd Forward a local sport to a remote dport lhost:sport => dport
+func SendLForwardCmd(peerNode *node.Node, sport uint16, lhost string, dport uint16) {
+	lforwardPacketCmd := protocol.NetLForwardPacketCmd{
+		Start:   1,
+		DstPort: dport,
+		SrcPort: sport,
+		LHost:   utils.IpToUint32(net.ParseIP(lhost)),
+	}
+	packetHeader := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(peerNode.HashID),
+		CmdType:   protocol.LFORWARD,
+	}
+
+	peerNode.WritePacket(packetHeader, lforwardPacketCmd)
+
+	// go HandleLForward()
 }

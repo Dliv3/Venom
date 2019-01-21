@@ -50,7 +50,7 @@ func AdminHandShake(conn net.Conn, peerNode *node.Node, currentSessionID uint16)
 		return
 	}
 
-	socks5Data := protocol.Socks5DataPacket{
+	socks5Data := protocol.NetDataPacket{
 		SessionID: currentSessionID,
 		DataLen:   uint32(n),
 		Data:      buf[:n],
@@ -77,7 +77,7 @@ func AdminHandShake(conn net.Conn, peerNode *node.Node, currentSessionID uint16)
 		if _, err = io.ReadFull(conn, buf[n:msgLen]); err != nil {
 			return
 		}
-		socks5Data := protocol.Socks5DataPacket{
+		socks5Data := protocol.NetDataPacket{
 			SessionID: currentSessionID,
 			DataLen:   uint32(msgLen - n),
 			Data:      buf[n:msgLen],
@@ -123,7 +123,7 @@ func AdminParseTarget(conn net.Conn, peerNode *node.Node, currentSessionID uint1
 		return
 	}
 
-	socks5Data := protocol.Socks5DataPacket{
+	socks5Data := protocol.NetDataPacket{
 		SessionID: currentSessionID,
 		DataLen:   uint32(n),
 		Data:      buf[:n],
@@ -183,7 +183,7 @@ func AdminParseTarget(conn net.Conn, peerNode *node.Node, currentSessionID uint1
 		if _, err = io.ReadFull(conn, buf[n:reqLen]); err != nil {
 			return
 		}
-		socks5Data := protocol.Socks5DataPacket{
+		socks5Data := protocol.NetDataPacket{
 			SessionID: currentSessionID,
 			DataLen:   uint32(reqLen - n),
 			Data:      buf[n:reqLen],

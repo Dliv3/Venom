@@ -24,6 +24,8 @@ func main() {
 	node.CurrentNode.InitCommandBuffer()
 	node.CurrentNode.InitDataBuffer()
 
+	dispather.InitAdminHandler()
+
 	if cli.Args.Mode == cli.CONNECT_MODE {
 		netio.InitNode(
 			"connect",
