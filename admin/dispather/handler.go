@@ -42,7 +42,7 @@ func handleLForward() {
 		node.CurrentNode.CommandBuffers[protocol.LFORWARD].ReadPacket(&packetHeaderRet, &lforwardPacketRet)
 
 		if lforwardPacketRet.Success == 0 {
-			fmt.Println("lforward error on agent, ")
+			fmt.Println("lforward error on agent.")
 			continue
 		}
 
