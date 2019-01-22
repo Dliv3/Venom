@@ -3,7 +3,6 @@ package dispather
 import (
 	"fmt"
 	"net"
-	"runtime"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/netio"
@@ -56,12 +55,13 @@ func handleLForward() {
 		lhost := utils.Uint32ToIp(lforwardPacketRet.LHost).String()
 		sport := lforwardPacketRet.SrcPort
 
-		netio.InitNode(
+		err := netio.InitTCP(
 			"connect",
 			fmt.Sprintf("%s:%d", lhost, sport),
-			func(conn net.Conn) {
-				// fmt.Println("conn...")
+			peerNode.HashID,
+			func(conn net.Conn, peerNodeID string, done chan bool, args ...interface{}) {
 				defer func() {
+					fmt.Println(" ################ admin close ################")
 					closeData := protocol.NetDataPacket{
 						SessionID: sessionID,
 						Close:     1,
@@ -74,8 +74,8 @@ func handleLForward() {
 					}
 					peerNode.WritePacket(packetHeader, closeData)
 
-					peerNode.DataBuffers[protocol.LFORWARDDATA].RealseDataBuffer(sessionID)
-					runtime.GC()
+					// peerNode.DataBuffers[protocol.LFORWARDDATA].RealseDataBuffer(sessionID)
+					// runtime.GC()
 				}()
 				c := make(chan bool, 2)
 
@@ -83,9 +83,24 @@ func handleLForward() {
 				go node.CopyNode2Net(peerNode, conn, sessionID, protocol.LFORWARDDATA, c)
 
 				<-c
-				<-c
+			})
 
-				// fmt.Println("HandleLForwardCmd Done!")
-			}, false)
+		if err != nil {
+			// fmt.Println("################ admin close ################")
+			closeData := protocol.NetDataPacket{
+				SessionID: sessionID,
+				Close:     1,
+			}
+			packetHeader := protocol.PacketHeader{
+				Separator: global.PROTOCOL_SEPARATOR,
+				CmdType:   protocol.LFORWARDDATA,
+				SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+				DstHashID: utils.UUIDToArray32(peerNode.HashID),
+			}
+			peerNode.WritePacket(packetHeader, closeData)
+
+			// peerNode.DataBuffers[protocol.LFORWARDDATA].RealseDataBuffer(sessionID)
+			// runtime.GC()
+		}
 	}
 }

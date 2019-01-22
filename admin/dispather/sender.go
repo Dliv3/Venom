@@ -5,7 +5,6 @@ import (
 	"io"
 	"net"
 	"os"
-	"runtime"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/netio"
@@ -441,8 +440,8 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool, args ..
 		}
 		peerNode.WritePacket(packetHeader, socks5CloseData)
 
-		node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].RealseDataBuffer(currentSessionID)
-		runtime.GC()
+		// node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].RealseDataBuffer(currentSessionID)
+		// runtime.GC()
 	}()
 
 	socks5ControlCmd := protocol.Socks5ControlPacketCmd{

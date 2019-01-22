@@ -8,7 +8,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"runtime"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/netio"
@@ -492,8 +491,8 @@ func handleSocks5Cmd() {
 				}
 				adminNode.WritePacket(packetHeader, socks5CloseData)
 
-				adminNode.DataBuffers[protocol.SOCKSDATA].RealseDataBuffer(socks5ControlCmd.SessionID)
-				runtime.GC()
+				// adminNode.DataBuffers[protocol.SOCKSDATA].RealseDataBuffer(socks5ControlCmd.SessionID)
+				// runtime.GC()
 			}()
 			if err := AgentHandShake(adminNode, socks5ControlCmd.SessionID); err != nil {
 				log.Println("[-]Socks handshake error:", err)
@@ -554,6 +553,8 @@ func localLForwardServer(conn net.Conn, peerNodeID string, done chan bool, args 
 	currentSessionID := adminNode.DataBuffers[protocol.LFORWARDDATA].GetSessionID()
 
 	defer func() {
+		// fmt.Println("################ agent close ################")
+
 		lforwardDataPacketCloseData := protocol.NetDataPacket{
 			SessionID: currentSessionID,
 			Close:     1,
@@ -566,8 +567,8 @@ func localLForwardServer(conn net.Conn, peerNodeID string, done chan bool, args 
 		}
 		adminNode.WritePacket(packetHeader, lforwardDataPacketCloseData)
 
-		adminNode.DataBuffers[protocol.LFORWARDDATA].RealseDataBuffer(currentSessionID)
-		runtime.GC()
+		// adminNode.DataBuffers[protocol.LFORWARDDATA].RealseDataBuffer(currentSessionID)
+		// runtime.GC()
 	}()
 
 	adminNode.DataBuffers[protocol.LFORWARDDATA].NewDataBuffer(currentSessionID)
@@ -594,7 +595,5 @@ func localLForwardServer(conn net.Conn, peerNodeID string, done chan bool, args 
 
 	// exit
 	<-c
-	<-c
 	<-done
-	// fmt.Println("Done!")
 }

@@ -5,10 +5,13 @@ import (
 	"io"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/protocol"
 )
+
+const TIME_OUT = 5
 
 type Buffer struct {
 	Chan chan interface{}
@@ -58,16 +61,30 @@ func (buffer *Buffer) ReadBytes() ([]byte, error) {
 	if buffer == nil {
 		return nil, errors.New("Buffer is null")
 	}
-	data := <-buffer.Chan
-	switch data.(type) {
-	case []byte:
-		return data.([]byte), nil
-	// Fix Bug : socks5连接不会断开的问题
-	case error:
-		return nil, io.EOF
-	default:
-		return nil, errors.New("Data Type Error")
+	// data := <-buffer.Chan
+	select {
+	case <-time.After(time.Second * TIME_OUT):
+		return nil, errors.New("TimeOut")
+	case data := <-buffer.Chan:
+		switch data.(type) {
+		case []byte:
+			return data.([]byte), nil
+		// Fix Bug : socks5连接不会断开的问题
+		case error:
+			return nil, io.EOF
+		default:
+			return nil, errors.New("Data Type Error")
+		}
 	}
+	// switch data.(type) {
+	// case []byte:
+	// 	return data.([]byte), nil
+	// // Fix Bug : socks5连接不会断开的问题
+	// case error:
+	// 	return nil, io.EOF
+	// default:
+	// 	return nil, errors.New("Data Type Error")
+	// }
 }
 
 // Fix Bug : socks5连接不会断开的问题

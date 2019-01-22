@@ -34,7 +34,7 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 
 		go handlerFunc(conn)
 
-		return err
+		return nil
 	} else if tcpType == "listen" {
 		var err error
 		var listener net.Listener
@@ -89,7 +89,7 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 				go handlerFunc(conn)
 			}
 		}()
-		return err
+		return nil
 	}
 	return INIT_TYPE_ERROR
 }
@@ -130,7 +130,7 @@ func InitTCP(tcpType string, tcpService string, peerNodeID string, handlerFunc f
 			return err
 		}
 
-		conn.SetKeepAlive(true)
+		// conn.SetKeepAlive(true)
 
 		go handlerFunc(conn, peerNodeID, nil, args)
 
