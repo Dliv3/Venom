@@ -548,7 +548,7 @@ func handleLForwardCmd() {
 
 func localLForwardServer(conn net.Conn, peerNodeID string, done chan bool, args ...interface{}) {
 	// fmt.Println("localLForwardServer")
-	defer conn.Close()
+	// defer conn.Close()
 	adminNode := node.Nodes[peerNodeID]
 	currentSessionID := adminNode.DataBuffers[protocol.LFORWARDDATA].GetSessionID()
 

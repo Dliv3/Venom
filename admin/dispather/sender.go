@@ -420,7 +420,7 @@ func SendSocks5Cmd(peerNode *node.Node, port uint16) bool {
 }
 
 func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool, args ...interface{}) {
-	defer conn.Close()
+	// defer conn.Close()
 
 	peerNode := node.Nodes[peerNodeID]
 

@@ -56,6 +56,7 @@ func CopyNode2Net(input *Node, output net.Conn, currentSessionID uint16, protoco
 			// fmt.Println(err)
 			input.DataBuffers[protocolType].RealseDataBuffer(currentSessionID)
 			runtime.GC()
+			output.Close()
 			break
 		}
 		output.Write(data)
