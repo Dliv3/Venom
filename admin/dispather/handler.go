@@ -61,7 +61,7 @@ func handleLForward() {
 			peerNode.HashID,
 			func(conn net.Conn, peerNodeID string, done chan bool, args ...interface{}) {
 				defer func() {
-					fmt.Println(" ################ admin close ################")
+					// fmt.Println(" ################ admin close ################")
 					closeData := protocol.NetDataPacket{
 						SessionID: sessionID,
 						Close:     1,

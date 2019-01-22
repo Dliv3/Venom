@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"net"
 	"runtime"
 
@@ -33,7 +32,7 @@ func CopyNet2Node(input net.Conn, output *Node, currentSessionID uint16, protoco
 			DataLen:   size,
 		}
 		if err != nil {
-			fmt.Println(err)
+			// fmt.Println(err)
 			if count > 0 {
 				output.WritePacket(packetHeader, socks5Data)
 			}
@@ -54,7 +53,7 @@ func CopyNode2Net(input *Node, output net.Conn, currentSessionID uint16, protoco
 	for {
 		data, err = input.DataBuffers[protocolType].GetDataBuffer(currentSessionID).ReadBytes()
 		if err != nil {
-			fmt.Println(err)
+			// fmt.Println(err)
 			input.DataBuffers[protocolType].RealseDataBuffer(currentSessionID)
 			runtime.GC()
 			break
