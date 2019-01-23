@@ -16,8 +16,8 @@ CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -ldflags "-s -w" -o release/agent
 
 # examples for iot:
 # arm eabi 5
-# echo "build arm eabi5 agent..."
-# CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 go build -ldflags "-s -w" -o release/agent_arm_eabi5 agent/agent.go
+echo "build arm eabi5 agent..."
+CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 go build -ldflags "-s -w" -o release/agent_arm_eabi5 agent/agent.go
 # mips 32 little endian
-# echo "build mipsel agent..."
-# CGO_ENABLED=0 GOOS=linux GOARCH=mipsle go build -ldflags "-s -w" -o release/agent_mipsel_version1 agent/agent.go
+echo "build mipsel agent..."
+CGO_ENABLED=0 GOOS=linux GOARCH=mipsle go build -ldflags "-s -w" -o release/agent_mipsel_version1 agent/agent.go
