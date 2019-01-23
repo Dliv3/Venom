@@ -471,7 +471,7 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool, args ..
 	// socks5 data buffer
 	node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].NewDataBuffer(currentSessionID)
 
-	c := make(chan bool)
+	c := make(chan bool, 2)
 
 	// 从node Socks5Buffer中读取数据，发送给客户端
 	go node.CopyNode2Net(peerNode, conn, currentSessionID, protocol.SOCKSDATA, c)
@@ -582,12 +582,15 @@ func localRForwardServer(conn net.Conn, peerNodeID string, done chan bool, args 
 
 	node.Nodes[peerNodeID].DataBuffers[protocol.RFORWARDDATA].NewDataBuffer(currentSessionID)
 
-	c := make(chan bool)
+	c := make(chan bool, 2)
 
 	go node.CopyNet2Node(conn, peerNode, currentSessionID, protocol.RFORWARDDATA, c)
 	go node.CopyNode2Net(peerNode, conn, currentSessionID, protocol.RFORWARDDATA, c)
 
-	// exit
+	// 大小为2的channel，在CopyNet2Node和CopyNode2Net时，只需要<-c一次即可
+	// 因为CopyNode2Net是阻塞的，需要在对应handler函数退出之后，接收到对方节点发来的close packet才会退出
 	<-c
+
+	// exit
 	<-done
 }

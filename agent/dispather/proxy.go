@@ -269,7 +269,7 @@ func PipeWhenClose(peerNode *node.Node, currentSessionID uint16, target string) 
 	defer remoteConn.Close()
 
 	// Transfer data
-	c := make(chan bool)
+	c := make(chan bool, 2)
 
 	// Copy local to remote
 	go node.CopyNode2Net(peerNode, remoteConn, currentSessionID, protocol.SOCKSDATA, c)
