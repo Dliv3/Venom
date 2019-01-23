@@ -212,7 +212,7 @@ func Interactive() {
 		case "exit":
 			os.Exit(0)
 		default:
-			fmt.Println("unknown cmdStr, use \"help\" to see all valid cmdStr")
+			fmt.Println("unknown command, use \"help\" to see all commands.")
 		}
 	}
 }
