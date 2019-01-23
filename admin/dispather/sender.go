@@ -426,24 +426,6 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool, args ..
 
 	currentSessionID := node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].GetSessionID()
 
-	defer func() {
-		// Fix Bug : socks5连接不会断开的问题
-		socks5CloseData := protocol.NetDataPacket{
-			SessionID: currentSessionID,
-			Close:     1,
-		}
-		packetHeader := protocol.PacketHeader{
-			Separator: global.PROTOCOL_SEPARATOR,
-			CmdType:   protocol.SOCKSDATA,
-			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-			DstHashID: utils.UUIDToArray32(peerNode.HashID),
-		}
-		peerNode.WritePacket(packetHeader, socks5CloseData)
-
-		// node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].RealseDataBuffer(currentSessionID)
-		// runtime.GC()
-	}()
-
 	socks5ControlCmd := protocol.Socks5ControlPacketCmd{
 		SessionID: currentSessionID,
 		Start:     1,
@@ -466,6 +448,24 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool, args ..
 		fmt.Println("socks5 start error on agent")
 		return
 	}
+
+	defer func() {
+		// Fix Bug : socks5连接不会断开的问题
+		socks5CloseData := protocol.NetDataPacket{
+			SessionID: currentSessionID,
+			Close:     1,
+		}
+		packetHeader := protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			CmdType:   protocol.SOCKSDATA,
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+			DstHashID: utils.UUIDToArray32(peerNode.HashID),
+		}
+		peerNode.WritePacket(packetHeader, socks5CloseData)
+
+		// node.Nodes[peerNodeID].DataBuffers[protocol.SOCKSDATA].RealseDataBuffer(currentSessionID)
+		// runtime.GC()
+	}()
 
 	// start read socks5 data from socks5 client
 	// socks5 data buffer
