@@ -79,7 +79,7 @@ func ShowBanner() {
 
 // ShowUsage
 func ShowUsage() {
-	fmt.Println(`--------------------------------------------------------------------------
+	fmt.Println(`
   help                                   Help information.
   exit                                   Exit.
   show                                   Display nodes map.
@@ -94,5 +94,5 @@ func ShowUsage() {
   shell                                  Start an interactive shell.
   upload   [local_file]  [remote_file]   Upload file to the target node.
   download [remote_file]  [local_file]   Download file from the target node.
---------------------------------------------------------------------------`)
+`)
 }
