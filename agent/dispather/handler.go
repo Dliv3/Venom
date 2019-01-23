@@ -51,6 +51,7 @@ func InitAgentHandler() {
 	go handleShellCmd()
 	go handleSocks5Cmd()
 	go handleLForwardCmd()
+	go handleRForwardCmd()
 }
 
 func handleSyncCmd() {
@@ -596,4 +597,70 @@ func localLForwardServer(conn net.Conn, peerNodeID string, done chan bool, args 
 	// exit
 	<-c
 	<-done
+}
+
+func handleRForwardCmd() {
+	for {
+		// 启动socks5的命令数据包
+		var packetHeader protocol.PacketHeader
+		var rforwardPacketCmd protocol.NetRForwardPacketCmd
+		node.CurrentNode.CommandBuffers[protocol.RFORWARD].ReadPacket(&packetHeader, &rforwardPacketCmd)
+
+		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
+
+		rhost := utils.Uint32ToIp(rforwardPacketCmd.RHost).String()
+		sport := rforwardPacketCmd.SrcPort
+
+		err := netio.InitTCP(
+			"connect",
+			fmt.Sprintf("%s:%d", rhost, sport),
+			adminNode.HashID,
+			func(conn net.Conn, peerNodeID string, done chan bool, args ...interface{}) {
+				rforwardPacketRet := protocol.NetRForwardPacketRet{
+					Success: 1,
+				}
+				packetHeaderRet := protocol.PacketHeader{
+					Separator: global.PROTOCOL_SEPARATOR,
+					CmdType:   protocol.RFORWARD,
+					SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+					DstHashID: utils.UUIDToArray32(adminNode.HashID),
+				}
+				adminNode.WritePacket(packetHeaderRet, rforwardPacketRet)
+
+				currentSessionID := rforwardPacketCmd.SessionID
+				adminNode.DataBuffers[protocol.RFORWARDDATA].NewDataBuffer(currentSessionID)
+				defer func() {
+					closeData := protocol.NetDataPacket{
+						SessionID: currentSessionID,
+						Close:     1,
+					}
+					packetHeader := protocol.PacketHeader{
+						Separator: global.PROTOCOL_SEPARATOR,
+						CmdType:   protocol.RFORWARDDATA,
+						SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+						DstHashID: utils.UUIDToArray32(adminNode.HashID),
+					}
+					adminNode.WritePacket(packetHeader, closeData)
+				}()
+				c := make(chan bool, 2)
+
+				go node.CopyNode2Net(adminNode, conn, currentSessionID, protocol.RFORWARDDATA, c)
+				go node.CopyNet2Node(conn, adminNode, currentSessionID, protocol.RFORWARDDATA, c)
+
+				<-c
+			})
+
+		if err != nil {
+			rforwardPacketRet := protocol.NetRForwardPacketRet{
+				Success: 0,
+			}
+			packetHeaderRet := protocol.PacketHeader{
+				Separator: global.PROTOCOL_SEPARATOR,
+				CmdType:   protocol.RFORWARD,
+				SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+				DstHashID: utils.UUIDToArray32(adminNode.HashID),
+			}
+			adminNode.WritePacket(packetHeaderRet, rforwardPacketRet)
+		}
+	}
 }

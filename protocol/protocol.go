@@ -183,9 +183,13 @@ type NetLForwardPacketRet struct {
 	LHost     uint32
 }
 
-// type NetForwardDataPacket struct {
-// 	SessionID uint16
-// 	DataLen   uint32
-// 	Data      []byte
-// 	Close     uint16
-// }
+type NetRForwardPacketCmd struct {
+	Start     uint16
+	SessionID uint16
+	RHost     uint32
+	SrcPort   uint16
+}
+
+type NetRForwardPacketRet struct {
+	Success uint16
+}

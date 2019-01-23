@@ -515,3 +515,79 @@ func SendLForwardCmd(peerNode *node.Node, sport uint16, lhost string, dport uint
 
 	// go HandleLForward()
 }
+
+// SendRForwardCmd Forward a remote sport to a local dport lhost:sport => dport
+func SendRForwardCmd(peerNode *node.Node, rhost string, sport uint16, dport uint16) bool {
+	err := netio.InitTCP(
+		"listen",
+		fmt.Sprintf("0.0.0.0:%d", dport),
+		peerNode.HashID,
+		localRForwardServer,
+		rhost,
+		sport,
+	)
+
+	if err != nil {
+		fmt.Println("rforward tcp listen error")
+		return false
+	}
+	return true
+}
+
+func localRForwardServer(conn net.Conn, peerNodeID string, done chan bool, args ...interface{}) {
+	// defer conn.Close()
+
+	peerNode := node.Nodes[peerNodeID]
+
+	currentSessionID := node.Nodes[peerNodeID].DataBuffers[protocol.RFORWARDDATA].GetSessionID()
+
+	rforwardPacketCmd := protocol.NetRForwardPacketCmd{
+		SessionID: currentSessionID,
+		Start:     1,
+		RHost:     utils.IpToUint32(net.ParseIP(args[0].([]interface{})[0].(string))),
+		SrcPort:   args[0].([]interface{})[1].(uint16),
+	}
+	packetHeader := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(peerNodeID),
+		CmdType:   protocol.RFORWARD,
+	}
+
+	node.Nodes[peerNodeID].WritePacket(packetHeader, rforwardPacketCmd)
+
+	// ReadPacket From CommandBuffer
+	var packetHeaderRet protocol.PacketHeader
+	var rforwardPacketRet protocol.NetRForwardPacketRet
+	node.CurrentNode.CommandBuffers[protocol.RFORWARD].ReadPacket(&packetHeaderRet, &rforwardPacketRet)
+
+	if rforwardPacketRet.Success == 0 {
+		fmt.Println("rforward: connect to target host error on agent")
+		return
+	}
+
+	defer func() {
+		netCloseData := protocol.NetDataPacket{
+			SessionID: currentSessionID,
+			Close:     1,
+		}
+		packetHeader := protocol.PacketHeader{
+			Separator: global.PROTOCOL_SEPARATOR,
+			CmdType:   protocol.RFORWARDDATA,
+			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+			DstHashID: utils.UUIDToArray32(peerNode.HashID),
+		}
+		peerNode.WritePacket(packetHeader, netCloseData)
+	}()
+
+	node.Nodes[peerNodeID].DataBuffers[protocol.RFORWARDDATA].NewDataBuffer(currentSessionID)
+
+	c := make(chan bool)
+
+	go node.CopyNet2Node(conn, peerNode, currentSessionID, protocol.RFORWARDDATA, c)
+	go node.CopyNode2Net(peerNode, conn, currentSessionID, protocol.RFORWARDDATA, c)
+
+	// exit
+	<-c
+	<-done
+}

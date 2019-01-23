@@ -200,9 +200,15 @@ func Interactive() {
 			}
 			var sport uint16
 			var dport uint16
-			fmt.Scanf("%d %d", &sport, &dport)
-			fmt.Printf("forward remote port %d to local port %d\n", sport, dport)
-			// dispather.SendRForwardCmd(peerNode, sport, dport)
+			var rhostString string
+			fmt.Scanf("%s %d %d", &rhostString, &sport, &dport)
+			rhost := net.ParseIP(rhostString)
+			if rhost == nil {
+				fmt.Println("invalid ip address.")
+				break
+			}
+			fmt.Printf("forward %s port %d to local port %d\n", rhostString, sport, dport)
+			dispather.SendRForwardCmd(peerNode, rhostString, sport, dport)
 		case "exit":
 			os.Exit(0)
 		default:
