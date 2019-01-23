@@ -247,8 +247,8 @@ func Interactive() {
 				fmt.Print("password:")
 				var password string
 				fmt.Scanf("%s", &password)
+				fmt.Printf("connect to target host's %d through ssh tunnel (%s@%s:%d).\n", dport, sshUser, sshHost, sshPort)
 				dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, password)
-				fmt.Printf("connect to target host's %d through ssh tunnel.\n", dport)
 			case 2:
 				fmt.Print("file path of ssh key:")
 				var path string
@@ -258,8 +258,8 @@ func Interactive() {
 					fmt.Println("ssh key error:", err)
 					break
 				}
+				fmt.Printf("connect to target host's %d through ssh tunnel (%s@%s:%d).\n", dport, sshUser, sshHost, sshPort)
 				dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, string(sshKey))
-				fmt.Printf("connect to target host's %d through ssh tunnel.\n", dport)
 			default:
 				fmt.Println("unknown choice.")
 				break
