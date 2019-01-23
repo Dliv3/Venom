@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/netio"
@@ -400,7 +401,11 @@ func handleShellCmd() {
 			cmd = exec.Command("c:\\windows\\system32\\cmd.exe")
 		// mac , linux, others
 		default:
-			cmd = exec.Command("/bin/bash", "-i")
+			if runtime.GOARCH == "386" || runtime.GOARCH == "amd64" {
+				cmd = exec.Command("/bin/bash", "-i")
+			} else {
+				cmd = exec.Command("/bin/sh", "-i")
+			}
 		}
 
 		out, _ := cmd.StdoutPipe()
