@@ -29,7 +29,6 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 - multiple administrator nodes
 - network traffic encryption
 - socks5 udp support
-- RESTful API
 - combined with meterpreter (to be discussed)
 
 ## Acknowledgement
