@@ -78,6 +78,8 @@ func (node *Node) CommandHandler(peerNode *Node) {
 				case protocol.LFORWARD:
 					fallthrough
 				case protocol.RFORWARD:
+					fallthrough
+				case protocol.SSHCONNECT:
 					node.CommandBuffers[lowLevelPacket.CmdType].WriteLowLevelPacket(lowLevelPacket)
 				case protocol.SOCKSDATA:
 					fallthrough
@@ -133,6 +135,7 @@ func (node *Node) InitCommandBuffer() {
 	node.CommandBuffers[protocol.SHELL] = NewBuffer()
 	node.CommandBuffers[protocol.LFORWARD] = NewBuffer()
 	node.CommandBuffers[protocol.RFORWARD] = NewBuffer()
+	node.CommandBuffers[protocol.SSHCONNECT] = NewBuffer()
 }
 
 func (node *Node) InitDataBuffer() {

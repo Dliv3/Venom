@@ -3,9 +3,12 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/Dliv3/Venom/admin/dispather"
@@ -209,6 +212,58 @@ func Interactive() {
 			}
 			fmt.Printf("forward %s port %d to local port %d\n", rhostString, sport, dport)
 			dispather.SendRForwardCmd(peerNode, rhostString, sport, dport)
+		case "sshconnect":
+			// sshconnect user:password@10.1.1.1:22 9999
+			if !checkCurrentPeerNode() {
+				break
+			}
+			var sshString string
+			var dport uint16
+			fmt.Scanf("%s %d", &sshString, &dport)
+			var sshUser string
+			var sshHost string
+			var sshPort uint16
+			if parts := strings.Split(sshString, "@"); len(parts) > 1 {
+				sshUser = parts[0]
+				sshHost = parts[1]
+			}
+			parts := strings.Split(sshHost, ":")
+			sshHost = parts[0]
+			if len(parts) > 1 {
+				tmp, _ := strconv.Atoi(parts[1])
+				sshPort = uint16(tmp)
+			} else if len(parts) == 1 {
+				sshPort = 22
+			}
+			if net.ParseIP(sshHost) == nil {
+				fmt.Println("invalid ssh server ip address.")
+				break
+			}
+			fmt.Print("use password (1) / ssh key (2)?")
+			var choice uint16
+			fmt.Scanf("%d", &choice)
+			switch choice {
+			case 1:
+				fmt.Print("password:")
+				var password string
+				fmt.Scanf("%s", &password)
+				dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, password)
+				fmt.Printf("connect to target host's %d through ssh tunnel.\n", dport)
+			case 2:
+				fmt.Print("file path of ssh key:")
+				var path string
+				fmt.Scanf("%s", &path)
+				sshKey, err := ioutil.ReadFile(path)
+				if err != nil {
+					fmt.Println("ssh key error:", err)
+					break
+				}
+				dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, string(sshKey))
+				fmt.Printf("connect to target host's %d through ssh tunnel.\n", dport)
+			default:
+				fmt.Println("unknown choice.")
+				break
+			}
 		case "exit":
 			os.Exit(0)
 		default:

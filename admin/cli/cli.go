@@ -80,19 +80,20 @@ func ShowBanner() {
 // ShowUsage
 func ShowUsage() {
 	fmt.Println(`
-  help                                   Help information.
-  exit                                   Exit.
-  show                                   Display nodes map.
-  setdes   [id] [info]                   Add a description to the node.
-  getdes   [id]                          View description of the node.
-  goto     [id]                          Select id as the target node.
-  listen   [port]                        Listen on a port on the target node.
-  connect  [ip] [port]                   Connect to a new node through current node.
-  socks    [lport]                       Start a socks server.
-  lforward [lhost] [sport] [dport]       Forward a local sport to a remote dport.
-  rforward [rhost] [sport] [dport]       Forward a remote sport to a local dport.
-  shell                                  Start an interactive shell.
-  upload   [local_file]  [remote_file]   Upload file to the target node.
-  download [remote_file]  [local_file]   Download file from the target node.
+  help                                     Help information.
+  exit                                     Exit.
+  show                                     Display network topology.
+  setdes     [id] [info]                   Add a description to the target node.
+  getdes     [id]                          View description of the target node.
+  goto       [id]                          Select id as the target node.
+  listen     [port]                        Listen on a port on the target node.
+  connect    [ip] [port]                   Connect to a new node through current node.
+  sshconnect [user@ip:port] [dport]        Connect to a new node through ssh tunnel.
+  shell                                    Start an interactive shell on the target node.
+  upload     [local_file]  [remote_file]   Upload file to the target node.
+  download   [remote_file]  [local_file]   Download file from the target node.
+  socks      [lport]                       Start a socks server.
+  lforward   [lhost] [sport] [dport]       Forward a local sport to a remote dport.
+  rforward   [rhost] [sport] [dport]       Forward a remote sport to a local dport.
 `)
 }

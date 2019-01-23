@@ -24,6 +24,7 @@ const (
 	SOCKS
 	LFORWARD
 	RFORWARD
+	SSHCONNECT
 	// 数据传输协议
 	SOCKSDATA
 	LFORWARDDATA
@@ -192,4 +193,21 @@ type NetRForwardPacketCmd struct {
 
 type NetRForwardPacketRet struct {
 	Success uint16
+}
+
+type SshConnectPacketCmd struct {
+	SshServer      uint32 // 服务端IP地址
+	SshPort        uint16 // ssh服务端口
+	DstPort        uint16 // 要连接的target node监听的端口
+	SshUserLen     uint32
+	SshUser        []byte // ssh用户名
+	SshAuthMethod  uint16 // password(1) / ssh key(2)
+	SshAuthDataLen uint32
+	SshAuthData    []byte // ssh key or password
+}
+
+type SshConnectPacketRet struct {
+	Success uint16 // 操作是否成功， 1 or 0
+	MsgLen  uint32 // 返回的信息长度
+	Msg     []byte // 如果成功则为空, 否则为错误信息
 }

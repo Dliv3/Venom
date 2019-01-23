@@ -52,6 +52,7 @@ func InitAgentHandler() {
 	go handleSocks5Cmd()
 	go handleLForwardCmd()
 	go handleRForwardCmd()
+	go handleSshConnectCmd()
 }
 
 func handleSyncCmd() {

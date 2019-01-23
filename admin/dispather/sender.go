@@ -594,3 +594,35 @@ func localRForwardServer(conn net.Conn, peerNodeID string, done chan bool, args 
 	// exit
 	<-done
 }
+
+func SendSshConnectCmd(peerNode *node.Node, sshUser string, sshHost string, sshPort uint16, dport uint16, sshAuthMethod uint16, sshAuthData string) {
+
+	sshConnectPacketCmd := protocol.SshConnectPacketCmd{
+		SshServer:      utils.IpToUint32(net.ParseIP(sshHost)),
+		SshPort:        sshPort,
+		DstPort:        dport,
+		SshUserLen:     uint32(len(sshUser)),
+		SshUser:        []byte(sshUser),
+		SshAuthMethod:  sshAuthMethod,
+		SshAuthDataLen: uint32(len(sshAuthData)),
+		SshAuthData:    []byte(sshAuthData),
+	}
+	packetHeader := protocol.PacketHeader{
+		Separator: global.PROTOCOL_SEPARATOR,
+		SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+		DstHashID: utils.UUIDToArray32(peerNode.HashID),
+		CmdType:   protocol.SSHCONNECT,
+	}
+
+	peerNode.WritePacket(packetHeader, sshConnectPacketCmd)
+
+	var sshConnectPacketRet protocol.ConnectPacketRet
+	node.CurrentNode.CommandBuffers[protocol.SSHCONNECT].ReadPacket(&packetHeader, &sshConnectPacketRet)
+
+	if sshConnectPacketRet.Success == 1 {
+		fmt.Println("ssh connect to remote node success!")
+	} else {
+		fmt.Println("ssh connect to remote node failed!")
+		fmt.Println(string(sshConnectPacketRet.Msg))
+	}
+}
