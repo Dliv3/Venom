@@ -28,7 +28,7 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 - combined with regeorg
 - multiple administrator nodes
 - network traffic encryption
-- socks5 udp support
+- support socks5 udp
 - combined with meterpreter (to be discussed)
 
 ## Acknowledgement
