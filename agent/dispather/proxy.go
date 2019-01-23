@@ -196,16 +196,7 @@ func AgentParseTarget(peerNode *node.Node, currentSessionID uint16) (host string
 
 func PipeWhenClose(peerNode *node.Node, currentSessionID uint16, target string) {
 
-	// if Verbose {
-	// log.Println("[+]Connect remote ", target, "...")
-	// }
-
-	// remoteConn, err := net.DialTimeout("tcp", target, time.Duration(time.Second*15))
-	// change timeout to 3s
-	// TODO 区分域名和IP两种情况，如果是IP的话，不要设置超时否则会导致nmap扫描很慢
-	// 如果是域名可以设置超时，因为有域名解析时间
 	remoteConn, err := net.DialTimeout("tcp", target, time.Duration(time.Second*2))
-	// conn, err := net.DialTCP("tcp", nil, target)
 	if err != nil {
 		log.Println("Connect remote :", err)
 		return
