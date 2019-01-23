@@ -102,17 +102,17 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 func isAppProtocol(conn net.Conn) (bool, []byte) {
 	var protocol = make([]byte, len(global.PROTOCOL_FEATURE))
 
-	_, err := Read(conn, protocol)
+	count, err := Read(conn, protocol)
 
 	if err != nil {
 		log.Println("[-]Read protocol packet error: ", err)
-		return false, protocol
+		return false, protocol[:count]
 	}
 
 	if string(protocol) == global.PROTOCOL_FEATURE {
-		return false, protocol
+		return false, protocol[:count]
 	} else {
-		return true, protocol
+		return true, protocol[:count]
 	}
 }
 
