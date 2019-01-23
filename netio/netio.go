@@ -191,11 +191,14 @@ func Read(input io.Reader, buffer []byte) (int, error) {
 }
 
 func Write(output io.Writer, buffer []byte) (int, error) {
-	n, err := output.Write(buffer)
-	if err != nil {
-		// log.Println("[-]Write Error: ", err)
+	if len(buffer) > 0 {
+		n, err := output.Write(buffer)
+		if err != nil {
+			// log.Println("[-]Write Error: ", err)
+		}
+		return n, err
 	}
-	return n, err
+	return 0, nil
 }
 
 // if found, return PROTOCOL_SEPARATOR

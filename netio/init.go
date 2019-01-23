@@ -8,12 +8,15 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/Dliv3/Venom/global"
 	reuseport "github.com/libp2p/go-reuseport"
 )
 
 var INIT_TYPE_ERROR = errors.New("init type error")
+
+const TIMEOUT = 5
 
 // InitNode 初始化节点间网络连接
 // handleFunc 处理net.Conn的函数
@@ -65,8 +68,8 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 					continue
 				}
 
-				appProtocol, data := isAppProtocol(conn)
-				if appProtocol {
+				appProtocol, data, timeout := isAppProtocol(conn)
+				if appProtocol || (!appProtocol && timeout) {
 					go func() {
 						port := strings.Split(tcpService, ":")[1]
 						addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("127.0.0.1:%s", port))
@@ -99,20 +102,35 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 // isAppProtocol
 // 返回值的第一个参数是标识协议是否为应用协议，判断前8字节是否为Venom发送的ABCDEFGH
 // 如果不是则为应用协议，否则为Venom协议
-func isAppProtocol(conn net.Conn) (bool, []byte) {
+func isAppProtocol(conn net.Conn) (bool, []byte, bool) {
 	var protocol = make([]byte, len(global.PROTOCOL_FEATURE))
+
+	defer conn.SetReadDeadline(time.Time{})
+
+	conn.SetReadDeadline(time.Now().Add(TIMEOUT * time.Second))
 
 	count, err := Read(conn, protocol)
 
+	timeout := false
+
 	if err != nil {
-		log.Println("[-]Read protocol packet error: ", err)
-		return false, protocol[:count]
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			timeout = true
+			// mysql etc
+			fmt.Println("timeout")
+			return false, protocol[:count], timeout
+		} else {
+			log.Println("[-]Read protocol packet error: ", err)
+			return false, protocol[:count], timeout
+		}
 	}
 
 	if string(protocol) == global.PROTOCOL_FEATURE {
-		return false, protocol[:count]
+		// is node
+		return false, protocol[:count], timeout
 	} else {
-		return true, protocol[:count]
+		// http/nginx etc
+		return true, protocol[:count], timeout
 	}
 }
 
