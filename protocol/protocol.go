@@ -6,10 +6,6 @@ import (
 	"github.com/Dliv3/Venom/netio"
 )
 
-// 为了方便自动化处理协议数据，只有分隔符可被设置成string类型
-// 如果有某字段Abc使用了长度不确定的类型，如[]byte
-// 则不需在该字段之前设置AbcLen字段来指定Abc字段长度
-
 // 协议类型
 const (
 	// 初始化，在node对象建立之前
