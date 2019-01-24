@@ -70,9 +70,9 @@ func Interactive() {
 	var peerNode *node.Node
 	for {
 		if currentPeerNodeHashID == "" {
-			fmt.Print("(admin node)>>> ")
+			fmt.Print("(admin node) >>> ")
 		} else {
-			fmt.Printf("(node %d)>>> ", nodeID)
+			fmt.Printf("(node %d) >>> ", nodeID)
 		}
 		var cmdStr string
 		fmt.Scanf("%s", &cmdStr)
