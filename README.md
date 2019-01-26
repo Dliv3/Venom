@@ -7,13 +7,12 @@
 
 Venom是一款使用Go开发的为渗透测试人员设计的多级代理工具。
 
-Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层代理。
+Venom可将多个节点进行连接，然后以节点为跳板，构建多级代理。
 
 渗透测试人员可以轻松使用Venom将网络流量代理到多层内网，并轻松地管理代理节点。
 
 
 > 此工具仅限于安全研究和教学，用户承担因使用此工具而导致的所有法律和相关责任！ 作者不承担任何法律和相关责任！
-> 
 
 
 ## 特点
@@ -59,7 +58,7 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
 
   ```
   # 复用apache 80端口，不影响apache提供正常的http服务
-  # -h 之后的参数需要写本机ip，不能写0.0.0.0，否则无法进行端口复用
+  # -h 的值为本机ip，不能写0.0.0.0，否则无法进行端口复用
   ./agent_linux_x64 -h 192.168.204.139 -l 80 -reuse-port
   ```
 
@@ -69,7 +68,7 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
 
 ### 2. admin节点内置命令
 
-- help 打印帮助信息
+- **help** 打印帮助信息
 
   ```
   (admin node) >>> help
@@ -92,7 +91,7 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
   
   ```
 
-- show 显示网络拓扑
+- **show** 显示网络拓扑
 
   A表示admin节点，数字表示agent节点
 
@@ -107,15 +106,15 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
        + -- 4
   ```
 
-- goto 操作某节点
+- **goto** 操作某节点
 
   ```
   (admin node) >>> goto 1
   (node 1) >>> 
-  # 在goto到某节点之后你就可以使用下面将要介绍的命令
   ```
+  在goto到某节点之后你就可以使用下面将要介绍的命令
 
-- getdes/setdes 获取/设置节点信息描述
+- **getdes/setdes** 获取/设置节点信息描述
 
   ```
   (node 1) >>> setdes linux x64 blahblahblah
@@ -123,16 +122,11 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
   linux x64 blahblahblah
   ```
 
-- connect/listen/sshconnect 节点间互连
+- **connect/listen/sshconnect** 节点间互连
+
+  node 1节点连接192.168.0.103的9999端口
 
   ```
-  (admin node) >>> show
-  A
-  + -- 1
-  (admin node) >>> goto 1
-  node 1
-
-  # node 1节点连接192.168.0.103的9999端口
   (node 1) >>> connect 192.168.0.103 9999
   ip port 192.168.0.103 9999
   connect to remote port success!
@@ -140,21 +134,22 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
   A
   + -- 1
        + -- 2
-
-  # 在node1节点监听9997端口
+  ```
+  在node1节点监听9997端口, 然后在另一台机器上运行 ./agent_linux_x64 -c 192.168.204.139 -p 9997 连接node1
+  ```
   (node 1) >>> listen 9997
   port 9997
   listen local port success!
-
-  # 然后在另一台机器上运行 ./agent_linux_x64 -c 192.168.204.139 -p 9997 连接node1
   (node 1) >>> show
   A
   + -- 1
        + -- 2
        + -- 3
+  
+  ```
+  node3通过ssh隧道连接192.168.0.104的9999端口。你可以使用密码或者是ssh私钥进行认证。
+  ```
   (node 1) >>> goto 3
-
-  # node3通过ssh隧道连接192.168.0.104的9999端口
   (node 3) >>> sshconnect root@192.168.0.104:22 9999
   use password (1) / ssh key (2)?2
   file path of ssh key:/Users/dlive/.ssh/id_rsa
@@ -168,7 +163,7 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
             + -- 4
   ```
 
-- shell 获取节点的交互式shell
+- **shell** 获取节点的交互式shell
 
   ```
   (node 1) >>> shell
@@ -182,17 +177,19 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
   exit
   ```
 
-- upload/download 向节点上传/从节点下载文件
+- **upload/download** 向节点上传/从节点下载文件
+
+  将本地/tmp/test.pdf上传到node1的/tmp/test2.pdf
 
   ```
-  # 将本地/tmp/test.pdf上传到node1的/tmp/test2.pdf
   (node 1) >>> upload /tmp/test.pdf /tmp/test2.pdf
   path /tmp/test.pdf /tmp/test2.pdf
   this file is too large(>100M), still uploading? (y/n)y
    154.29 MiB / 154.23 MiB [========================================] 100.04% 1s
   upload file success!
-  
-  # 将node1的文件/tmp/test.pdf下载到本地的/tmp/test2.pdf
+  ```
+  将node1的文件/tmp/test.pdf下载到本地的/tmp/test2.pdf
+  ```
   (node 1) >>> download /tmp/test2.pdf /tmp/test3.pdf
   path /tmp/test2.pdf /tmp/test3.pdf
   this file is too large(>100M), still downloading? (y/n)y
@@ -200,7 +197,7 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
   download file success!
   ```
 
-- socks 建立到某节点的socks5代理
+- **socks** 建立到某节点的socks5代理
 
   ```
   (node 1) >>> socks 7777
@@ -210,7 +207,7 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
 
   执行成功socks命令之后，会在admin节点本地开启一个端口，如上述的7777，使用7777即可进行socks5代理
 
-- lforward/rforward 将本地端口转发到远程/将远程端口转发到本地
+- **lforward/rforward** 将本地端口转发到远程/将远程端口转发到本地
 
   lforward将admin节点本地的8888端口转发到node1的8888端口
 
@@ -227,13 +224,13 @@ Venom可将多个节点进行连接 ，然后以节点为跳板，构建多层�
 
 ### 3. 注意事项
 
-- 现阶段仅支持一个admin节点对网络进行管理
+- 现阶段仅支持单个admin节点对网络进行管理
 - 要对新加入的节点进行操作，需要首先在admin节点运行show命令同步网络拓扑和节点编号
 
 ## TODO
 
 - 与regeorg联动
-- 支持多个管理节点同时对网络进行管理
+- 多个admin节点同时对网络进行管理
 - 节点间通信流量加密
 - socks5对udp的支持
 - 与meterpreter联动 (待定)
