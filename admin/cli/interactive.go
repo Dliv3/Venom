@@ -83,26 +83,19 @@ func Interactive() {
 			dispather.SendSyncCmd()
 			printNetworkMap()
 		case "setdes":
-			var nodeID int
+			if !checkCurrentPeerNode() {
+				break
+			}
 			var description string
-			fmt.Scanf("%d", &nodeID)
 			reader := bufio.NewReader(os.Stdin)
 			descriptionBytes, _, _ := reader.ReadLine()
 			description = string(descriptionBytes)
-			// description = util.ScanLine()
-			if _, ok := node.GNodeInfo.NodeNumber2UUID[nodeID]; ok {
-				node.GNodeInfo.NodeDescription[nodeID] = description
-			} else {
-				fmt.Println("unknown nodeID")
-			}
+			node.GNodeInfo.NodeDescription[currentPeerNodeHashID] = description
 		case "getdes":
-			var nodeID int
-			fmt.Scanf("%d", &nodeID)
-			if _, ok := node.GNodeInfo.NodeDescription[nodeID]; ok {
-				fmt.Println(node.GNodeInfo.NodeDescription[nodeID])
-			} else {
-				fmt.Println("unknown nodeID")
+			if !checkCurrentPeerNode() {
+				break
 			}
+			fmt.Println(node.GNodeInfo.NodeDescription[currentPeerNodeHashID])
 		case "goto":
 			var tmpNodeID int
 			fmt.Scanf("%d", &tmpNodeID)

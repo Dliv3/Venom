@@ -20,7 +20,7 @@ var GNetworkTopology = NetworkTopology{
 var GNodeInfo = NodeInfo{
 	NodeNumber2UUID: make(map[int]string),
 	NodeUUID2Number: make(map[string]int),
-	NodeDescription: make(map[int]string),
+	NodeDescription: make(map[string]string),
 }
 
 // Nodes 与当前节点连接的节点

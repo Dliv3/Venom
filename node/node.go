@@ -219,7 +219,7 @@ type NodeInfo struct {
 	NodeNumber2UUID map[int]string
 	NodeUUID2Number map[string]int
 	// 节点描述
-	NodeDescription map[int]string
+	NodeDescription map[string]string
 }
 
 // NodeExist 节点是否存在
