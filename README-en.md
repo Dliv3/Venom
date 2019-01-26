@@ -1,10 +1,10 @@
-## Venom - A Multi-layer Proxy for Attackers
+## Venom - A Multi-hop Proxy for Attackers
 
 [简体中文](README.md)　｜　[English](README-en.md)
 
-Venom is a multi-layer proxy tool developed for attackers using Go.
+Venom is a multi-hop proxy tool developed for attackers using Go.
 
-You can easily use venom to automatically proxy your network traffic to a multi-layer intranet, and easily manage intranet nodes.
+You can use venom to easily proxy network traffic to a multi-layer intranet, and easily manage intranet nodes.
 
 <img src="docs/venom.png" width="80%" height="80%" />
 
@@ -15,8 +15,8 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 ## Features
 
 - network topology
-- multi-layer socks5 proxy
-- multi-layer port forward
+- multi-hop socks5 proxy
+- multi-hop port forward
 - port reuse (apache/mysql/...)
 - ssh tunnel 
 - interactive shell
@@ -33,7 +33,7 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 
   Admin listens on the port 9999, the agent connects to the admin:
 
-  ```bash
+  ```
   ./admin_macos_x64 -l 9999
   ```
 

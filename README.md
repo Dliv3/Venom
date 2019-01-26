@@ -1,12 +1,12 @@
-## Venom - A Multi-layer Proxy for Attackers
+## Venom - A Multi-hop Proxy for Attackers
 
 [简体中文](README.md)　｜　[English](README-en.md)
 
-Venom是一款使用Go开发的为渗透测试人员设计的多级代理工具。
+Venom是一款为渗透测试人员设计的使用Go开发的多级代理工具。
 
 Venom可将多个节点进行连接，然后以节点为跳板，构建多级代理。
 
-渗透测试人员可以轻松使用Venom将网络流量代理到多层内网，并轻松地管理代理节点。
+渗透测试人员可以使用Venom轻松地将网络流量代理到多层内网，并轻松地管理代理节点。
 
 <img src="docs/venom.png" width="80%" height="80%" />
 
@@ -34,7 +34,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
   admin监听端口，agent发起连接:
 
-  ```bash
+  ```
   ./admin_macos_x64 -l 9999
   ```
 
