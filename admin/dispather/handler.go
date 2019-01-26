@@ -29,7 +29,10 @@ func AdminServer(conn net.Conn) {
 	}
 }
 
+var LForwardTarget map[string]bool
+
 func InitAdminHandler() {
+	LForwardTarget = make(map[string]bool)
 	go handleLForward()
 }
 
@@ -54,6 +57,10 @@ func handleLForward() {
 
 		lhost := utils.Uint32ToIp(lforwardPacketRet.LHost).String()
 		sport := lforwardPacketRet.SrcPort
+
+		if _, ok := LForwardTarget[utils.Sha256(fmt.Sprintf("%s:%d", lhost, sport))]; !ok {
+			continue
+		}
 
 		err := netio.InitTCP(
 			"connect",

@@ -513,6 +513,8 @@ func SendLForwardCmd(peerNode *node.Node, sport uint16, lhost string, dport uint
 
 	peerNode.WritePacket(packetHeader, lforwardPacketCmd)
 
+	LForwardTarget[utils.Sha256(fmt.Sprintf("%s:%d", lhost, sport))] = true
+
 	// go HandleLForward()
 }
 
