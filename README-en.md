@@ -1,6 +1,13 @@
 ## Venom - A Multi-layer Proxy for Attackers
 
+<p>
+<a href="README.md">简体中文</a>
+<a href="README-en.md">English</a>
+</p>
+
 You can easily use venom to automatically proxy your network traffic to a multi-layer intranet, and easily manage intranet nodes.
+
+![admin-node](docs/img/admin.png)
 
 > This tool is limited to security research and teaching, and the user bears all legal and related responsibilities caused by the use of this tool! The author does not assume any legal and related responsibilities!
 
@@ -10,8 +17,8 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 - network topology
 - multi-layer socks5 proxy
 - multi-layer port forward
-- port reuse (apache/nginx/mysql ...)
-- ssh tunnel
+- port reuse (apache/mysql/...)
+- ssh tunnel 
 - interactive shell
 - upload and download file
 - supports multiple platforms(Linux/Windows/MacOS) and multiple architectures(x86/x64/arm/mips)
@@ -28,6 +35,7 @@ You can easily use venom to automatically proxy your network traffic to a multi-
 - multiple administrator nodes
 - network traffic encryption
 - support socks5 udp
+- RESTful API
 - combined with meterpreter (to be discussed)
 
 ## Acknowledgement
