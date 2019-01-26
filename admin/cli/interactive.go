@@ -232,18 +232,18 @@ func Interactive() {
 				fmt.Println("invalid ssh server ip address.")
 				break
 			}
-			fmt.Print("use password (1) / ssh key (2)?")
+			fmt.Print("use password (1) / ssh key (2)? ")
 			var choice uint16
 			fmt.Scanf("%d", &choice)
 			switch choice {
 			case 1:
-				fmt.Print("password:")
+				fmt.Print("password: ")
 				var password string
 				fmt.Scanf("%s", &password)
 				fmt.Printf("connect to target host's %d through ssh tunnel (%s@%s:%d).\n", dport, sshUser, sshHost, sshPort)
 				dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, password)
 			case 2:
-				fmt.Print("file path of ssh key:")
+				fmt.Print("file path of ssh key: ")
 				var path string
 				fmt.Scanf("%s", &path)
 				sshKey, err := ioutil.ReadFile(path)
