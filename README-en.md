@@ -185,7 +185,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   (node 1) >>> upload /tmp/test.pdf /tmp/test2.pdf
   path /tmp/test.pdf /tmp/test2.pdf
   this file is too large(>100M), still uploading? (y/n)y
-   154.29 MiB / 154.23 MiB [========================================] 100.04% 1s
+   154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   upload file success!
   ```
   Download node1's file /tmp/test.pdf to your local /tmp/test2.pdf

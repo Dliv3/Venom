@@ -342,16 +342,14 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 				DataLen: uint32(n),
 				Data:    buf[0:n],
 			}
-			dataLen, _ := utils.PacketSize(dataPacket)
 			packetHeader := protocol.PacketHeader{
 				Separator: global.PROTOCOL_SEPARATOR,
 				SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
 				DstHashID: utils.UUIDToArray32(peerNode.HashID),
 				CmdType:   protocol.UPLOAD,
-				DataLen:   dataLen,
 			}
 			peerNode.WritePacket(packetHeader, dataPacket)
-			bar.Add64(int64(dataLen))
+			bar.Add64(int64(n))
 		}
 		if err != nil {
 			if err != io.EOF {

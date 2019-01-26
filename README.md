@@ -183,7 +183,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
   (node 1) >>> upload /tmp/test.pdf /tmp/test2.pdf
   path /tmp/test.pdf /tmp/test2.pdf
   this file is too large(>100M), still uploading? (y/n)y
-   154.29 MiB / 154.23 MiB [========================================] 100.04% 1s
+   154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   upload file success!
   ```
   将node1的文件/tmp/test.pdf下载到本地的/tmp/test2.pdf
