@@ -1,14 +1,49 @@
 ## Venom - A Multi-layer Proxy for Attackers
 
-<p>
-<a href="README.md">Simplified Chinese</a>
-<a href="README-en.md">English</a>
-</p>
+[简体中文](README.md)　｜　[English](README-en.md)
+
 Venom is a multi-layer proxy tool developed for attackers using Go.
 
 You can easily use venom to automatically proxy your network traffic to a multi-layer intranet, and easily manage intranet nodes.
 
-![venom](docs/venom.png)
+```
+Venom Admin Node Start...
+ _    _
+| |  | |   author: Dlive   v1.0
+| |  | |  ____  ____    ___   ____
+ \ \/ /  / _  )|  _ \  / _ \ |    \
+  \  /  ( (/ / | | | || |_| || | | |
+   \/    \____)|_| |_| \___/ |_|_|_|
+
+(admin node) >>> show
+A
++ -- 1
+     + -- 2
+(admin node) >>> goto 2
+node 2
+(node 2) >>> shell
+You can execute dispather in this shell :D, 'exit' to exit.
+bash: no job control in this shell
+bash-3.2$ whoami
+whoami
+dlive
+bash-3.2$ exit
+exit
+exit
+(node 2) >>> socks 7777
+port 7777
+a socks5 proxy of the target node has started up on local port 7777
+(node 2) >>> sshconnect dlive@192.168.204.139:22 9999
+use password (1) / ssh key (2)? 1
+password: dlive
+connect to target host's 9999 through ssh tunnel (dlive@192.168.204.139:22).
+ssh connect to remote node success!
+(node 2) >>> show
+A
++ -- 1
+     + -- 2
+          + -- 3
+```
 
 
 > This tool is limited to security research and teaching, and the user bears all legal and related responsibilities caused by the use of this tool! The author does not assume any legal and related responsibilities!
@@ -148,7 +183,8 @@ You can easily use venom to automatically proxy your network traffic to a multi-
        + -- 3
   ```
 
-  Node3 connects to port 9998 of 192.168.0.104 through the ssh tunnel. You can use ssh or private key for ssh authentication.
+  Execute `./agent_linux_x64 -l 9999` on 192.168.0.104, then node3 connects to port 9998 of 192.168.0.104 through the ssh tunnel using sshconnect command. 
+  You can use ssh or private key for ssh authentication.
   ```
   (node 1) >>> goto 3
   (node 3) >>> sshconnect root@192.168.0.104:22 9999

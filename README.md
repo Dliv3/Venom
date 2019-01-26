@@ -1,9 +1,6 @@
 ## Venom - A Multi-layer Proxy for Attackers
 
-<p>
-<a href="README.md">简体中文</a>
-<a href="README-en.md">English</a>
-</p>
+[简体中文](README.md)　｜　[English](README-en.md)
 
 Venom是一款使用Go开发的为渗透测试人员设计的多级代理工具。
 
@@ -136,7 +133,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
   + -- 1
        + -- 2
   ```
-  在node1节点监听9997端口, 然后在另一台机器上运行 ./agent_linux_x64 -c 192.168.204.139 -p 9997 连接node1
+  在node1节点监听9997端口, 然后在另一台机器上运行`./agent_linux_x64 -c 192.168.204.139 -p 9997` 连接node1
   ```
   (node 1) >>> listen 9997
   port 9997
@@ -148,7 +145,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
        + -- 3
   
   ```
-  node3通过ssh隧道连接192.168.0.104的9999端口。你可以使用密码或者是ssh私钥进行认证。
+  在192.168.0.104上执行`./agent_linux_x64 -l 9999`, node3通过sshconnect建立ssh隧道连接192.168.0.104的9999端口。你可以使用密码或者是ssh私钥进行认证。
   ```
   (node 1) >>> goto 3
   (node 3) >>> sshconnect root@192.168.0.104:22 9999
