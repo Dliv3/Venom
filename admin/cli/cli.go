@@ -83,8 +83,8 @@ func ShowUsage() {
   help                                     Help information.
   exit                                     Exit.
   show                                     Display network topology.
-  setdes     [id] [info]                   Add a description to the target node.
-  getdes     [id]                          View description of the target node.
+  getdes                                   View description of the target node.
+  setdes     [info]                        Add a description to the target node.
   goto       [id]                          Select id as the target node.
   listen     [port]                        Listen on a port on the target node.
   connect    [ip] [port]                   Connect to a new node through current node.
