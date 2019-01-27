@@ -23,7 +23,7 @@ func (nt *NetworkTopology) recursiveUpdateRouteTable(root string, key string) {
 				// 避免成环
 				if _, ok := nt.RouteTable[v]; !ok {
 					nt.RouteTable[v] = root
-					nt.recursiveUpdateRouteTable(v, v)
+					nt.recursiveUpdateRouteTable(root, v)
 				}
 			}
 		}

@@ -20,6 +20,8 @@ func SendSyncCmd() {
 	// 重新初始化网络拓扑，这样当有节点断开时网络拓扑会实时改变
 	node.GNetworkTopology.InitNetworkMap()
 
+	networkMap := node.GNetworkTopology.GenerateNetworkMapData()
+
 	for i := range node.Nodes {
 		// 向直连的节点发送SYNC数据包，同步网络拓扑
 		// 目标节点会递归处理SYNC数据包，以获得全网拓扑
@@ -33,7 +35,6 @@ func SendSyncCmd() {
 				CmdType:   protocol.SYNC,
 			}
 			// 生成本节点网络拓扑数据
-			networkMap := node.GNetworkTopology.GenerateNetworkMapData()
 			syncPacket := protocol.SyncPacket{
 				NetworkMapLen: uint64(len(networkMap)),
 				NetworkMap:    networkMap,
@@ -103,9 +104,9 @@ func SendListenCmd(peerNode *node.Node, port uint16) {
 	node.CurrentNode.CommandBuffers[protocol.LISTEN].ReadPacket(&packetHeader, &listenPacketRet)
 
 	if listenPacketRet.Success == 1 {
-		fmt.Println("listen local port success!")
+		fmt.Println("listen remote port success!")
 	} else {
-		fmt.Println("listen local port failed!")
+		fmt.Println("listen remote port failed!")
 		fmt.Println(string(listenPacketRet.Msg))
 	}
 }

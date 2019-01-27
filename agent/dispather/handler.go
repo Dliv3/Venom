@@ -75,6 +75,8 @@ func handleSyncCmd() {
 		// nextNode为下一跳
 		nextNode := node.Nodes[node.GNetworkTopology.RouteTable[peerNodeID]]
 
+		networkMap := node.GNetworkTopology.GenerateNetworkMapData()
+
 		// 递归向其他节点发送sync同步路由表请求
 		for i := range node.Nodes {
 			if node.Nodes[i].HashID != peerNodeID && node.Nodes[i].DirectConnection {
@@ -84,7 +86,6 @@ func handleSyncCmd() {
 					DstHashID: utils.UUIDToArray32(node.Nodes[i].HashID),
 					CmdType:   protocol.SYNC,
 				}
-				networkMap := node.GNetworkTopology.GenerateNetworkMapData()
 				tempSyncPacket := protocol.SyncPacket{
 					NetworkMapLen: uint64(len(networkMap)),
 					NetworkMap:    networkMap,
@@ -134,7 +135,7 @@ func handleSyncCmd() {
 			DstHashID: packetHeader.SrcHashID,
 			CmdType:   protocol.SYNC,
 		}
-		networkMap := node.GNetworkTopology.GenerateNetworkMapData()
+		networkMap = node.GNetworkTopology.GenerateNetworkMapData()
 		syncPacket = protocol.SyncPacket{
 			NetworkMapLen: uint64(len(networkMap)),
 			NetworkMap:    networkMap,
