@@ -95,7 +95,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   The following topology diagram shows that node1 connects to the admin node, node2 and node4 connect to 1 node, and node3 connects to node2.
 
   ```
-  (admin node) >>> show
+  (node 1) >>> show
   A
   + -- 1
        + -- 2
