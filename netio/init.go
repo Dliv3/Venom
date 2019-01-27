@@ -117,7 +117,7 @@ func isAppProtocol(conn net.Conn) (bool, []byte, bool) {
 		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 			timeout = true
 			// mysql etc
-			fmt.Println("timeout")
+			// fmt.Println("timeout")
 			return false, protocol[:count], timeout
 		} else {
 			log.Println("[-]Read protocol packet error: ", err)
@@ -129,7 +129,7 @@ func isAppProtocol(conn net.Conn) (bool, []byte, bool) {
 		// is node
 		return false, protocol[:count], timeout
 	} else {
-		// http/nginx etc
+		// http etc
 		return true, protocol[:count], timeout
 	}
 }
