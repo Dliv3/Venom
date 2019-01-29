@@ -89,7 +89,7 @@ func ShowUsage() {
   goto       [id]                          Select id as the target node.
   listen     [lport]                       Listen on a port on the target node.
   connect    [rhost] [rport]               Connect to a new node through current node.
-  sshconnect [user@ip:port] [rport]        Connect to a new node through ssh tunnel.
+  sshconnect [user@ip:port] [dport]        Connect to a new node through ssh tunnel.
   shell                                    Start an interactive shell on the target node.
   upload     [local_file]  [remote_file]   Upload file to the target node.
   download   [remote_file]  [local_file]   Download file from the target node.
