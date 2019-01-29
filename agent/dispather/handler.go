@@ -162,7 +162,7 @@ func handleListenCmd() {
 		err := netio.InitNode(
 			"listen",
 			fmt.Sprintf("0.0.0.0:%d", listenPacketCmd.Port),
-			AgentServer, false)
+			AgentServer, false, 0)
 
 		var listenPacketRet protocol.ListenPacketRet
 		if err != nil {
@@ -194,7 +194,7 @@ func handleConnectCmd() {
 		err := netio.InitNode(
 			"connect",
 			fmt.Sprintf("%s:%d", utils.Uint32ToIp(connectPacketCmd.IP).String(), connectPacketCmd.Port),
-			AgentClient, false)
+			AgentClient, false, 0)
 
 		var connectPacketRet protocol.ConnectPacketRet
 		if err != nil {

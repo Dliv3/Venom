@@ -30,12 +30,12 @@ func main() {
 		netio.InitNode(
 			"connect",
 			fmt.Sprintf("%s:%d", cli.Args.RemoteIP, uint16(cli.Args.RemotePort)),
-			dispather.AdminClient, false)
+			dispather.AdminClient, false, 0)
 	} else {
 		netio.InitNode(
 			"listen",
 			fmt.Sprintf("0.0.0.0:%d", uint16(cli.Args.LocalPort)),
-			dispather.AdminServer, false)
+			dispather.AdminServer, false, 0)
 	}
 	cli.Interactive()
 }
