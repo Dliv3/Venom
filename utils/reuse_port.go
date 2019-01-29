@@ -33,8 +33,8 @@ import (
 // iptables -t nat -X VENOM
 
 const CHAIN_NAME = "VENOM"
-const START_FORWARDING = "venomleaving"
-const STOP_FORWARDING = "venomcoming"
+const START_FORWARDING = "venomcoming"
+const STOP_FORWARDING = "venomleaving"
 
 var INVALID_IP_ADDR = errors.New("invalid ip address.")
 var CMD_EXEC_FAIDED = errors.New("iptables command exec failed.")
@@ -82,7 +82,7 @@ func SetPortReuseRules(localPort uint16, reusedPort uint16) error {
 	cmds = append(cmds, fmt.Sprintf("iptables -t nat -A PREROUTING -p tcp --dport %d --syn -m recent --rcheck --seconds 3600 --name %s --rsource -j %s", reusedPort, strings.ToLower(CHAIN_NAME), CHAIN_NAME))
 
 	for _, each := range cmds {
-		fmt.Println(each)
+		// fmt.Println(each)
 		cmd := strings.Split(each, " ")
 		err := exec.Command(cmd[0], cmd[1:]...).Run()
 		if err != nil {
