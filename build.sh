@@ -21,3 +21,6 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 go build -ldflags "-s -w" -o release
 # mips 32 little endian
 echo "build mipsel agent..."
 CGO_ENABLED=0 GOOS=linux GOARCH=mipsle go build -ldflags "-s -w" -o release/agent_mipsel_version1 agent/agent.go
+
+# a helper script
+cp scripts/port_reuse.py release

@@ -4,8 +4,8 @@
 # a simple script to start/stop iptables port reuse.
 
 # example:
-#   python scripts/port_reuse.py --start --rhost 192.168.1.2 --rport 80
-#   python scripts/port_reuse.py --stop --rhost 192.168.1.2 --rport 80
+#   python port_reuse.py --start --rhost 192.168.1.2 --rport 80
+#   python port_reuse.py --stop --rhost 192.168.1.2 --rport 80
 
 import socket
 import argparse
@@ -29,15 +29,19 @@ elif options.stop:
     data = STOP_PORT_REUSE
 else:
     parser.print_help()
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(2)
+    s.connect((options.ip, int(options.port)))
+    s.send(data)
+except:
+    print "[-]Connect to target host error."
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.settimeout(2)
-s.connect((options.ip, int(options.port)))
-s.send(data)
 try:
     s.recv(1024)
 except:
     pass
+
 s.close()
 
-print "Done!"
+print "[+]Done!"
