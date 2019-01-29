@@ -24,9 +24,9 @@ type Option struct {
 var Args Option
 
 func init() {
-	flag.IntVar(&Args.LocalPort, "l", 0, "Listen a local `port`.")
-	flag.StringVar(&Args.RemoteIP, "c", "", "Remote `ip` address.")
-	flag.IntVar(&Args.RemotePort, "p", 0, "The `port` on remote host.")
+	flag.IntVar(&Args.LocalPort, "lport", 0, "Listen a local `port`.")
+	flag.StringVar(&Args.RemoteIP, "rhost", "", "Remote `ip` address.")
+	flag.IntVar(&Args.RemotePort, "rport", 0, "The `port` on remote host.")
 
 	// change default Usage
 	flag.Usage = usage
@@ -37,8 +37,8 @@ func usage() {
 	fmt.Fprintf(os.Stderr, `Venom version: 1.0
 
 Usage:
-	$ ./venom_admin -l [lport]
-	$ ./venom_admin -c [rhost] -p [rport]
+	$ ./venom_admin -lport [port]
+	$ ./venom_admin -rhost [ip] -rport [port]
 
 Options:
 `)
