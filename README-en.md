@@ -70,7 +70,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   # Apache under windows environment: 
   # Reuse apache 80 port, does not affect apache to provide normal http service
   # The value of -h is the local ip, and can't be 0.0.0.0. Otherwise, port reuse cannot be performed.
-  ./agent_windows_x86 -lhost 192.168.204.139 -reuse-port 80
+  ./agent.exe -lhost 192.168.204.139 -reuse-port 80
   ```
 
   ```

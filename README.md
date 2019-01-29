@@ -67,7 +67,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
   # 以windows下apache为例
   # 复用apache 80端口，不影响apache提供正常的http服务
   # -h 的值为本机ip，不能写0.0.0.0，否则无法进行端口复用
-  ./agent_windows_x86 -lhost 192.168.204.139 -reuse-port 80
+  ./agent.exe -lhost 192.168.204.139 -reuse-port 80
   ```
 
   ```
