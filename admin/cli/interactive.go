@@ -103,7 +103,7 @@ func Interactive() {
 			if _, ok := node.GNodeInfo.NodeNumber2UUID[tmpNodeID]; ok {
 				nodeID = tmpNodeID
 			} else {
-				fmt.Println("unknown nodeID")
+				fmt.Println("unknown node id.")
 				break
 			}
 			currentPeerNodeHashID = node.GNodeInfo.NodeNumber2UUID[nodeID]
@@ -116,9 +116,9 @@ func Interactive() {
 			}
 			var port uint16
 			fmt.Scanf("%d", &port)
-			fmt.Println("port", port)
+			fmt.Println("listen", port)
 			if port > 65535 || port < 1 {
-				fmt.Println("port number error")
+				fmt.Println("port number error.")
 				break
 			}
 			dispather.SendListenCmd(peerNode, port)
@@ -129,7 +129,7 @@ func Interactive() {
 			var ipString string
 			var port uint16
 			fmt.Scanf("%s %d", &ipString, &port)
-			fmt.Println("ip port", ipString, port)
+			fmt.Println("connect to", ipString, port)
 			ip := net.ParseIP(ipString)
 			if ip == nil {
 				fmt.Println("invalid ip address.")
@@ -142,9 +142,8 @@ func Interactive() {
 			}
 			var port uint16
 			fmt.Scanf("%d", &port)
-			fmt.Println("port", port)
 			if port > 65535 || port < 1 {
-				fmt.Println("port number error")
+				fmt.Println("port number error.")
 				break
 			}
 			dispather.SendSocks5Cmd(peerNode, port)
@@ -152,7 +151,7 @@ func Interactive() {
 			if !checkCurrentPeerNode() {
 				break
 			}
-			fmt.Println("You can execute dispather in this shell :D, 'exit' to exit.")
+			fmt.Println("You can execute command in this shell :D, 'exit' to exit.")
 			shellExit = false
 			dispather.SendShellCmd(peerNode)
 			shellExit = true
@@ -164,7 +163,7 @@ func Interactive() {
 			var remotePath string
 
 			fmt.Scanf("%s %s", &localPath, &remotePath)
-			fmt.Println("path", localPath, remotePath)
+			fmt.Println("upload", localPath, "to", remotePath)
 			dispather.SendUploadCmd(peerNode, localPath, remotePath)
 		case "download":
 			if !checkCurrentPeerNode() {
@@ -173,7 +172,7 @@ func Interactive() {
 			var remotePath string
 			var localPath string
 			fmt.Scanf("%s %s", &remotePath, &localPath)
-			fmt.Println("path", remotePath, localPath)
+			fmt.Println("download", remotePath, "from", localPath)
 			dispather.SendDownloadCmd(peerNode, remotePath, localPath)
 		case "lforward":
 			if !checkCurrentPeerNode() {

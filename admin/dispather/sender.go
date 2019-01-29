@@ -104,9 +104,9 @@ func SendListenCmd(peerNode *node.Node, port uint16) {
 	node.CurrentNode.CommandBuffers[protocol.LISTEN].ReadPacket(&packetHeader, &listenPacketRet)
 
 	if listenPacketRet.Success == 1 {
-		fmt.Println("listen remote port success!")
+		fmt.Println(fmt.Sprintf("the port %d is successfully listening on the remote node!", port))
 	} else {
-		fmt.Println("listen remote port failed!")
+		fmt.Println(fmt.Sprintf("failed to open the port %d on the remote node!", port))
 		fmt.Println(string(listenPacketRet.Msg))
 	}
 }
@@ -130,9 +130,9 @@ func SendConnectCmd(peerNode *node.Node, ip string, port uint16) {
 	node.CurrentNode.CommandBuffers[protocol.CONNECT].ReadPacket(&packetHeader, &connectPacketRet)
 
 	if connectPacketRet.Success == 1 {
-		fmt.Println("connect to remote port success!")
+		fmt.Println("successfully connect to the remote port!")
 	} else {
-		fmt.Println("connect to remote port failed!")
+		fmt.Println("failed to connect to the remote port!")
 		fmt.Println(string(connectPacketRet.Msg))
 	}
 }
@@ -242,7 +242,7 @@ func SendDownloadCmd(peerNode *node.Node, remotePath string, localPath string) b
 		}
 	}
 	bar.Finish()
-	fmt.Println("download file success!")
+	fmt.Println("download file successfully!")
 
 	return true
 }
@@ -371,7 +371,7 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 		fmt.Println("upload file error: " + string(uploadPacketRet.Msg))
 		return false
 	}
-	fmt.Println("upload file success!")
+	fmt.Println("upload file successfully!")
 	return true
 }
 
@@ -411,10 +411,10 @@ func SendSocks5Cmd(peerNode *node.Node, port uint16) bool {
 	err := netio.InitTCP("listen", fmt.Sprintf("0.0.0.0:%d", port), peerNode.HashID, localSocks5Server)
 
 	if err != nil {
-		fmt.Println("socks5 proxy startup error")
+		fmt.Println("socks5 proxy startup error.")
 		return false
 	}
-	fmt.Printf("a socks5 proxy of the target node has started up on local port %d\n", port)
+	fmt.Printf("a socks5 proxy of the target node has started up on the local port %d.\n", port)
 	return true
 }
 
