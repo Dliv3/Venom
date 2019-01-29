@@ -87,9 +87,9 @@ func ShowUsage() {
   getdes                                   View description of the target node.
   setdes     [info]                        Add a description to the target node.
   goto       [id]                          Select id as the target node.
-  listen     [port]                        Listen on a port on the target node.
-  connect    [ip] [port]                   Connect to a new node through current node.
-  sshconnect [user@ip:port] [dport]        Connect to a new node through ssh tunnel.
+  listen     [lport]                       Listen on a port on the target node.
+  connect    [rhost] [rport]               Connect to a new node through current node.
+  sshconnect [user@ip:port] [rport]        Connect to a new node through ssh tunnel.
   shell                                    Start an interactive shell on the target node.
   upload     [local_file]  [remote_file]   Upload file to the target node.
   download   [remote_file]  [local_file]   Download file from the target node.
