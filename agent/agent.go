@@ -5,7 +5,7 @@ import (
 
 	"github.com/Dliv3/Venom/agent/cli"
 	"github.com/Dliv3/Venom/agent/dispather"
-	"github.com/Dliv3/Venom/agent/initnode"
+	initnode "github.com/Dliv3/Venom/agent/init"
 	"github.com/Dliv3/Venom/node"
 )
 
