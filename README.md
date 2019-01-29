@@ -30,38 +30,75 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
 ### 1. admin/agent命令行参数
 
-- admin节点和agent节点均可建立连接也可发起连接
+- **admin节点和agent节点均可建立连接也可发起连接**
 
   admin监听端口，agent发起连接:
 
   ```
-  ./admin_macos_x64 -l 9999
+  ./admin_macos_x64 -lport 9999
   ```
 
   ```
-  ./agent_linux_x64 -c 192.168.0.103 -p 9999
+  ./agent_linux_x64 -rhost 192.168.0.103 -rport 9999
   ```
 
   agent监听端口，admin发起连接:
 
   ```
-  ./agent_linux_x64 -l 8888
+  ./agent_linux_x64 -lport 8888
   ```
 
   ```
-  ./admin_macos_x64 -c 192.168.204.139 -p 8888
+  ./admin_macos_x64 -rhost 192.168.204.139 -rport 8888
   ```
 
-- agent节点支持端口复用，可复用如apache、mysql等支持端口复用的服务的端口
+- **agent节点支持端口复用**
+
+  agent提供了两种端口复用方法
+
+  1. 通过SO_REUSEPORT和SO_REUSEADDR选项进行端口复用
+  2. 通过iptables进行端口复用(仅支持Linux平台)
+
+  通过venom提供的端口复用功能，在windows上可以复用apache、mysql等服务的端口，暂时无法复用RDP、IIS等服务端口，在linux上可以复用多数服务端口。被复用的端口仍可正常对外提供其原有服务。
+
+  **第一种端口复用方法**
 
   ```
+  # 以windows下apache为例
   # 复用apache 80端口，不影响apache提供正常的http服务
   # -h 的值为本机ip，不能写0.0.0.0，否则无法进行端口复用
-  ./agent_linux_x64 -h 192.168.204.139 -l 80 -reuse-port
+  ./agent_windows_x86 -lhost 192.168.204.139 -reuse-port 80
   ```
 
   ```
-  ./admin_macos_x64 -c 192.168.204.139 -p 80
+  ./admin_macos_x64 -rhost 192.168.204.139 -rport 80
+  ```
+
+  **第二种端口复用方法**
+
+  ```
+  # 以linux下apache为例
+  sudo ./agent_linux_x64 -lport 8080 -reuse-port 80
+  ```
+
+  这种端口复用方法会在本机设置iptables规则，将`reuse-port`的流量转发到`lport`，再由agent分发流量
+
+  需要注意一点，如果通过`sigterm`，`sigint`信号结束程序(kill或ctrl-c)，程序可以自动清理iptables规则。如果agent被`kill -9`杀掉则无法自动清理iptables规则，需要手动清理，因为agent程序无法处理sigkill信号。
+
+  为了避免iptables规则不能自动被清理导致渗透测试者无法访问80端口服务，所以第二种端口复用方法采用了`iptables -m recent`通过特殊的tcp包控制iptables转发规则是否开启。
+
+  这里的实现参考了 https://www.freebuf.com/articles/network/137683.html
+
+  ```
+  # 启动agent在linux主机上设置的iptables规则
+  # 如果rhost在内网，可以使用socks5代理脚本流量，socks5代理的使用见下文
+  python scripts/port_reuse.py --start --rhost 192.168.204.135 --rport 80
+  
+  # 连接agent节点
+  ./admin_macos_x64 -rhost 192.168.204.135 -rport 80
+  
+  # 如果要关闭转发规则
+  python scripts/port_reuse.py --stop --rhost 192.168.204.135 --rport 80
   ```
 
 ### 2. admin节点内置命令
@@ -74,11 +111,11 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
     help                                     Help information.
     exit                                     Exit.
     show                                     Display network topology.
-    setdes     [id] [info]                   Add a description to the target node.
-    getdes     [id]                          View description of the target node.
+    getdes                                   View description of the target node.
+    setdes     [info]                        Add a description to the target node.
     goto       [id]                          Select id as the target node.
-    listen     [port]                        Listen on a port on the target node.
-    connect    [ip] [port]                   Connect to a new node through current node.
+    listen     [lport]                       Listen on a port on the target node.
+    connect    [rhost] [rport]               Connect to a new node through current node.
     sshconnect [user@ip:port] [dport]        Connect to a new node through ssh tunnel.
     shell                                    Start an interactive shell on the target node.
     upload     [local_file]  [remote_file]   Upload file to the target node.
@@ -86,7 +123,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
     socks      [lport]                       Start a socks server.
     lforward   [lhost] [sport] [dport]       Forward a local sport to a remote dport.
     rforward   [rhost] [sport] [dport]       Forward a remote sport to a local dport.
-  
+    
   ```
 
 - **show** 显示网络拓扑
@@ -103,6 +140,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
             + -- 3
        + -- 4
   ```
+  注意要对新加入的节点进行操作，需要首先在admin节点运行show命令同步网络拓扑和节点编号
 
 - **goto** 操作某节点
 
@@ -126,31 +164,30 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
   ```
   (node 1) >>> connect 192.168.0.103 9999
-  ip port 192.168.0.103 9999
-  connect to remote port success!
+  connect to 192.168.0.103 9999
+  successfully connect to the remote port!
   (node 1) >>> show
   A
   + -- 1
        + -- 2
   ```
-  在node1节点监听9997端口, 然后在另一台机器上运行`./agent_linux_x64 -c 192.168.204.139 -p 9997` 连接node1
+  在node1节点监听9997端口, 然后在另一台机器上运行`./agent_linux_x64 -rhost 192.168.204.139 -rport 9997` 连接node1
   ```
   (node 1) >>> listen 9997
-  port 9997
-  listen local port success!
+  listen 9997
+  the port 9997 is successfully listening on the remote node!
   (node 1) >>> show
   A
   + -- 1
        + -- 2
        + -- 3
-  
   ```
-  在192.168.0.104上执行`./agent_linux_x64 -l 9999`, node3通过sshconnect建立ssh隧道连接192.168.0.104的9999端口。你可以使用密码或者是ssh私钥进行认证。
+  在192.168.0.104上执行`./agent_linux_x64 -lport 9999`, node3通过sshconnect建立ssh隧道连接192.168.0.104的9999端口。你可以使用密码或者是ssh私钥进行认证。
   ```
   (node 1) >>> goto 3
   (node 3) >>> sshconnect root@192.168.0.104:22 9999
-  use password (1) / ssh key (2)?2
-  file path of ssh key:/Users/dlive/.ssh/id_rsa
+  use password (1) / ssh key (2)? 2
+  file path of ssh key: /Users/dlive/.ssh/id_rsa
   connect to target host's 9999 through ssh tunnel (root@192.168.0.104:22).
   ssh connect to remote node success!
   (node 3) >>> show
@@ -181,25 +218,24 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
   ```
   (node 1) >>> upload /tmp/test.pdf /tmp/test2.pdf
-  path /tmp/test.pdf /tmp/test2.pdf
+  upload /tmp/test.pdf to /tmp/test2.pdf
   this file is too large(>100M), still uploading? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
-  upload file success!
+  upload file successfully!
   ```
   将node1的文件/tmp/test.pdf下载到本地的/tmp/test2.pdf
   ```
   (node 1) >>> download /tmp/test2.pdf /tmp/test3.pdf
-  path /tmp/test2.pdf /tmp/test3.pdf
+  download /tmp/test2.pdf from /tmp/test3.pdf
   this file is too large(>100M), still downloading? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
-  download file success!
+  download file successfully!
   ```
 
 - **socks** 建立到某节点的socks5代理
 
   ```
   (node 1) >>> socks 7777
-  port 7777
   a socks5 proxy of the target node has started up on local port 7777
   ```
 
@@ -224,6 +260,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
 - 现阶段仅支持单个admin节点对网络进行管理
 - 要对新加入的节点进行操作，需要首先在admin节点运行show命令同步网络拓扑和节点编号
+- 当使用第二种端口复用方法(基于iptables)时，你需要使用`script/port_reuse.py`去启用agent在目标主机上设置的端口复用规则。
 
 ## TODO
 
@@ -238,4 +275,5 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
 - [rootkiter#Termite](https://github.com/rootkiter/Termite)
 - [ring04h#s5.go](https://github.com/ring04h/s5.go)
+- [n1nty#远程遥控 IPTables 进行端口复用](https://www.freebuf.com/articles/network/137683.html)
 

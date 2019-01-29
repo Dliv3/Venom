@@ -29,39 +29,79 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
 ### 1. admin/agent command line parameters
 
-- Both the admin node and the agent node can act as a server or client.
+- **Both the admin node and the agent node can act as a server or client.**
 
   Admin listens on the port 9999, the agent connects to the admin:
 
   ```
-  ./admin_macos_x64 -l 9999
+  ./admin_macos_x64 -lport 9999
   ```
 
   ```
-  ./agent_linux_x64 -c 192.168.0.103 -p 9999
+  ./agent_linux_x64 -rhost 192.168.0.103 -rport 9999
   ```
 
   Agent listens on the port 8888, the admin connects to the agent:
 
   ```
-  ./agent_linux_x64 -l 8888
+  ./agent_linux_x64 -lport 8888
   ```
 
   ```
-  ./admin_macos_x64 -c 192.168.204.139 -p 8888
+  ./admin_macos_x64 -rhost 192.168.204.139 -rport 8888
   ```
 
-- The agent node supports port reuse, and can reuse ports such as apache 80 and mysql 3306.
+- **The agent node supports port reuse.**
+
+  Agent provides two port reuse methods
+
+  1. Port reuse via SO_REUSEPORT and SO_REUSEADDR options
+  2. Port reuse via iptables (Linux platform only)
+
+  The ports of most services can be reused on linux. 
+
+  The ports of services such as apache and mysql can be reused on Windows,  and the ports of RDP, IIS, etc. can not be reused temporarily. 
+
+  The reused port can still provide its original service normally.
+
+  **The first port reuse method**
 
   ```
+  # Apache under windows environment: 
   # Reuse apache 80 port, does not affect apache to provide normal http service
   # The value of -h is the local ip, and can't be 0.0.0.0. Otherwise, port reuse cannot be performed.
-  ./agent_linux_x64 -h 192.168.204.139 -l 80 -reuse-port
+  ./agent_windows_x86 -lhost 192.168.204.139 -reuse-port 80
   ```
 
   ```
-  ./admin_macos_x64 -c 192.168.204.139 -p 80
+  ./admin_macos_x64 -rhost 192.168.204.139 -rport 80
   ```
+  **The second port reuse method**
+
+  ```
+  # Apache under linux environment:
+  sudo ./agent_linux_x64 -lport 8080 -reuse-port 80
+  ```
+
+  This method will add the iptables rules, iptables forwards the traffic of the `reuse-port` to the `lport`, and then distribute the traffic by the agent.
+
+  One thing to note is that if the `sigterm`or `sigint` ends the agent (kill or ctrl-c), the agent can automatically clean up the iptables rules. If the agent is killed by `kill -9`, the iptables rule cannot be automatically cleaned up and needs to be cleaned manually because the agent program cannot deal with the sigkill signal.  
+
+  In order to prevent the iptables rules from being automatically cleaned up and the penetration tester cannot access the 80-port service, the second port reuse method uses `iptables -m recent` to control whether the iptables forwarding rules are enabled through special tcp packets.
+
+  Reference https://www.freebuf.com/articles/network/137683.html
+
+    ```
+  # Start the iptables port reuse rules set by the agent on the linux host
+  # If rhost is on the intranet, you can use the socks5 to proxy traffic. See the following for the use of the socks5 proxy.
+  python scripts/port_reuse.py --start --rhost 192.168.204.135 --rport 80
+    
+  # Connect to the agent
+  ./admin_macos_x64 -rhost 192.168.204.135 -rport 80
+    
+  # If you want to turn off iptables port reuse rules
+  python scripts/port_reuse.py --stop --rhost 192.168.204.135 --rport 80
+    ```
 
 ### 2. admin node built-in commands
 
@@ -73,11 +113,11 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
     help                                     Help information.
     exit                                     Exit.
     show                                     Display network topology.
-    setdes     [id] [info]                   Add a description to the target node.
-    getdes     [id]                          View description of the target node.
+    getdes                                   View description of the target node.
+    setdes     [info]                        Add a description to the target node.
     goto       [id]                          Select id as the target node.
-    listen     [port]                        Listen on a port on the target node.
-    connect    [ip] [port]                   Connect to a new node through current node.
+    listen     [lport]                       Listen on a port on the target node.
+    connect    [rhost] [rport]               Connect to a new node through current node.
     sshconnect [user@ip:port] [dport]        Connect to a new node through ssh tunnel.
     shell                                    Start an interactive shell on the target node.
     upload     [local_file]  [remote_file]   Upload file to the target node.
@@ -85,7 +125,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
     socks      [lport]                       Start a socks server.
     lforward   [lhost] [sport] [dport]       Forward a local sport to a remote dport.
     rforward   [rhost] [sport] [dport]       Forward a remote sport to a local dport.
-  
+    
   ```
 
 - **show** (Display network topology)
@@ -102,6 +142,9 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
             + -- 3
        + -- 4
   ```
+  
+  Note that to operate on a newly joined node, first run the show command on the admin node to synchronize the network topology and node number.
+
 
 - **goto** (You want to operate a node)
 
@@ -124,8 +167,8 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   Node1 connects to port 9999 of 192.168.0.103.
   ```
   (node 1) >>> connect 192.168.0.103 9999
-  ip port 192.168.0.103 9999
-  connect to remote port success!
+  connect to 192.168.0.103 9999
+  successfully connect to the remote port!
   (node 1) >>> show
   A
   + -- 1
@@ -133,12 +176,12 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   ```
 
   Listening to port 9997 on the node1.
-  Then run `./agent_linux_x64 -c 192.168.204.139 -p 9997` on another machine to connect to node1.
+  Then run `./agent_linux_x64 -rhost 192.168.204.139 -rport 9997` on another machine to connect to node1.
 
   ```
   (node 1) >>> listen 9997
-  port 9997
-  listen local port success!
+  listen 9997
+  the port 9997 is successfully listening on the remote node!
   (node 1) >>> show
   A
   + -- 1
@@ -146,8 +189,9 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
        + -- 3
   ```
 
-  Execute `./agent_linux_x64 -l 9999` on 192.168.0.104, then node3 connects to port 9998 of 192.168.0.104 through the ssh tunnel using sshconnect command. 
+  Execute `./agent_linux_x64 -lport 9999` on 192.168.0.104, then node3 connects to port 9998 of 192.168.0.104 through the ssh tunnel using sshconnect command. 
   You can use ssh or private key for ssh authentication.
+
   ```
   (node 1) >>> goto 3
   (node 3) >>> sshconnect root@192.168.0.104:22 9999
@@ -183,25 +227,24 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
   ```  
   (node 1) >>> upload /tmp/test.pdf /tmp/test2.pdf
-  path /tmp/test.pdf /tmp/test2.pdf
+  upload /tmp/test.pdf to /tmp/test2.pdf
   this file is too large(>100M), still uploading? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
-  upload file success!
+  upload file successfully!
   ```
   Download node1's file /tmp/test.pdf to your local /tmp/test2.pdf
   ```
   (node 1) >>> download /tmp/test2.pdf /tmp/test3.pdf
-  path /tmp/test2.pdf /tmp/test3.pdf
+  download /tmp/test2.pdf from /tmp/test3.pdf
   this file is too large(>100M), still downloading? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
-  download file success!
+  download file successfully!
   ```
 
 - **socks** (Establish a socks5 agent to a node)
 
   ```
   (node 1) >>> socks 7777
-  port 7777
   a socks5 proxy of the target node has started up on local port 7777
   ```
 
@@ -226,6 +269,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
 - Only one admin node is supported at this stage to manage the network.
 - To operate on a newly joined node, first run the show command on the admin node to synchronize the network topology and node number.
+- When using the second port reuse method (based on iptables), you need to use `script/port_reuse.py` to enable the port reuse rules set by the agent on the target host.
 
 ## TODO
 
@@ -240,4 +284,4 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
 - [rootkiter#Termite](https://github.com/rootkiter/Termite)
 - [ring04h#s5.go](https://github.com/ring04h/s5.go)
-
+- [n1nty#远程遥控 IPTables 进行端口复用](https://www.freebuf.com/articles/network/137683.html)
