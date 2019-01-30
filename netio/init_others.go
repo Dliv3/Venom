@@ -15,7 +15,7 @@ import (
 
 var INIT_TYPE_ERROR = errors.New("init type error")
 
-const TIMEOUT = 5
+const TIMEOUT = 2
 
 // InitNode 初始化节点间网络连接
 // handleFunc 处理net.Conn的函数
