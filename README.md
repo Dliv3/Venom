@@ -30,7 +30,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
 ### 1. admin/agent命令行参数
 
-- **admin节点和agent节点均可建立连接也可发起连接**
+- **admin节点和agent节点均可监听连接也可发起连接**
 
   admin监听端口，agent发起连接:
 
@@ -78,6 +78,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
   ```
   # 以linux下apache为例
+  # 需要root权限
   sudo ./agent_linux_x64 -lport 8080 -reuse-port 80
   ```
 

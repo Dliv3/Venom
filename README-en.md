@@ -80,6 +80,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
   ```
   # Apache under linux environment:
+  # Requires root privileges
   sudo ./agent_linux_x64 -lport 8080 -reuse-port 80
   ```
 
