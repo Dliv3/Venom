@@ -187,7 +187,7 @@ func Interactive() {
 				fmt.Println("invalid ip address.")
 				break
 			}
-			fmt.Printf("forward %s port %d to remote port %d\n", lhostString, sport, dport)
+			fmt.Printf("forward local network %s port %d to remote port %d\n", lhostString, sport, dport)
 			dispather.SendLForwardCmd(peerNode, sport, lhostString, dport)
 		case "rforward":
 			if !checkCurrentPeerNode() {
@@ -202,7 +202,7 @@ func Interactive() {
 				fmt.Println("invalid ip address.")
 				break
 			}
-			fmt.Printf("forward %s port %d to local port %d\n", rhostString, sport, dport)
+			fmt.Printf("forward remote network %s port %d to local port %d\n", rhostString, sport, dport)
 			dispather.SendRForwardCmd(peerNode, rhostString, sport, dport)
 		case "sshconnect":
 			// sshconnect user:password@10.1.1.1:22 9999
