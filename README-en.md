@@ -2,7 +2,7 @@
 
 [简体中文](README.md)　｜　[English](README-en.md)
 
-Venom is a multi-hop proxy tool developed for attackers penetration testers using Go.
+Venom is a multi-hop proxy tool developed for penetration testers using Go.
 
 You can use venom to easily proxy network traffic to a multi-layer intranet, and easily manage intranet nodes.
 
@@ -86,7 +86,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
   This method will add the iptables rules, iptables forwards the traffic of the `reuse-port` to the `lport`, and then distribute the traffic by the agent.
 
-  One thing to note is that if the `sigterm`or `sigint` ends the agent (kill or ctrl-c), the agent can automatically clean up the iptables rules. If the agent is killed by `kill -9`, the iptables rule cannot be automatically cleaned up and needs to be cleaned manually because the agent program cannot deal with the `sigkill` signal.  
+  One thing to note is that if the `sigterm`or `sigint` ends the agent (kill or ctrl-c), the agent will automatically clean up the iptables rules. If the agent is killed by `kill -9`, the iptables rule cannot be automatically cleaned up and needs to be cleaned manually because the agent program cannot deal with the `sigkill` signal.  
 
   In order to prevent the iptables rules from being automatically cleaned up and the penetration tester cannot access the 80-port service, the second port reuse method uses `iptables -m recent` to control whether the iptables forwarding rules are enabled through special tcp packets.
 
@@ -131,7 +131,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
 - **show** (Display network topology)
 
-  A represents the admin node, and the number represents the agent node.
+  The letter 'A' represents the admin node, and the number represents the agent node.
 
   The following topology diagram shows that node1 connects to the admin node, node2 and node4 connect to 1 node, and node3 connects to node2.
 
