@@ -88,7 +88,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
   为了避免iptables规则不能自动被清理导致渗透测试者无法访问80端口服务，所以第二种端口复用方法采用了`iptables -m recent`通过特殊的tcp包控制iptables转发规则是否开启。
 
-  这里的实现参考了 https://www.freebuf.com/articles/network/137683.html
+  这里的实现参考了 https://threathunter.org/topic/594545184ea5b2f5516e2033
 
   ```
   # 启动agent在linux主机上设置的iptables规则
@@ -276,5 +276,5 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
 - [rootkiter#Termite](https://github.com/rootkiter/Termite)
 - [ring04h#s5.go](https://github.com/ring04h/s5.go)
-- [n1nty#远程遥控 IPTables 进行端口复用](https://www.freebuf.com/articles/network/137683.html)
+- [n1nty#远程遥控 IPTables 进行端口复用](https://threathunter.org/topic/594545184ea5b2f5516e2033)
 

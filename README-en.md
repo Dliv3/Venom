@@ -90,7 +90,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
   In order to prevent the iptables rules from being automatically cleaned up and the penetration tester cannot access the 80-port service, the second port reuse method uses `iptables -m recent` to control whether the iptables forwarding rules are enabled through special tcp packets.
 
-  Reference https://www.freebuf.com/articles/network/137683.html
+  Reference https://threathunter.org/topic/594545184ea5b2f5516e2033
 
     ```
   # Start the iptables port reuse rules set by the agent on the linux host
@@ -285,4 +285,4 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
 - [rootkiter#Termite](https://github.com/rootkiter/Termite)
 - [ring04h#s5.go](https://github.com/ring04h/s5.go)
-- [n1nty#远程遥控 IPTables 进行端口复用](https://www.freebuf.com/articles/network/137683.html)
+- [n1nty#远程遥控 IPTables 进行端口复用](https://threathunter.org/topic/594545184ea5b2f5516e2033)
