@@ -119,9 +119,9 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
     connect    [rhost] [rport]               Connect to a new node through current node.
     sshconnect [user@ip:port] [dport]        Connect to a new node through ssh tunnel.
     shell                                    Start an interactive shell on the target node.
-    upload     [local_file]  [remote_file]   Upload file to the target node.
-    download   [remote_file]  [local_file]   Download file from the target node.
-    socks      [lport]                       Start a socks server.
+    upload     [local_file]  [remote_file]   Upload files to the target node.
+    download   [remote_file]  [local_file]   Download files from the target node.
+    socks      [lport]                       Start a socks5 server.
     lforward   [lhost] [sport] [dport]       Forward a local sport to a remote dport.
     rforward   [rhost] [sport] [dport]       Forward a remote sport to a local dport.
     

@@ -121,9 +121,9 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
     connect    [rhost] [rport]               Connect to a new node through current node.
     sshconnect [user@ip:port] [dport]        Connect to a new node through ssh tunnel.
     shell                                    Start an interactive shell on the target node.
-    upload     [local_file]  [remote_file]   Upload file to the target node.
-    download   [remote_file]  [local_file]   Download file from the target node.
-    socks      [lport]                       Start a socks server.
+    upload     [local_file]  [remote_file]   Upload files to the target node.
+    download   [remote_file]  [local_file]   Download files from the target node.
+    socks      [lport]                       Start a socks5 server.
     lforward   [lhost] [sport] [dport]       Forward a local sport to a remote dport.
     rforward   [rhost] [sport] [dport]       Forward a remote sport to a local dport.
     
@@ -208,7 +208,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
             + -- 4
   ```
 
-- **shell** (Get the interactive shell of the node)
+- **shell** (Get a interactive shell of the target node)
 
   ```
   (node 1) >>> shell
@@ -222,7 +222,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   exit
   ```
 
-- **upload/download** (Upload/download files from the node)
+- **upload/download** (Upload/download files from the target node)
 
   Upload local /tmp/test.pdf to node1's /tmp/test2.pdf
 
@@ -242,7 +242,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   download file successfully!
   ```
 
-- **socks** (Establish a socks5 agent to a node)
+- **socks** (Establish a socks5 proxy on the target node)
 
   ```
   (node 1) >>> socks 7777
