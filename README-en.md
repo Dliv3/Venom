@@ -118,7 +118,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
     setdes     [info]                        Add a description to the target node.
     goto       [id]                          Select id as the target node.
     listen     [lport]                       Listen on a port on the target node.
-    connect    [rhost] [rport]               Connect to a new node through current node.
+    connect    [rhost] [rport]               Connect to a new node through the target node.
     sshconnect [user@ip:port] [dport]        Connect to a new node through ssh tunnel.
     shell                                    Start an interactive shell on the target node.
     upload     [local_file]  [remote_file]   Upload files to the target node.
@@ -208,7 +208,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
             + -- 4
   ```
 
-- **shell** (Get a interactive shell of the target node)
+- **shell** (Get an interactive shell of the target node)
 
   ```
   (node 1) >>> shell
