@@ -257,13 +257,13 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
   ```
   (node 1) >>> lforward 127.0.0.1 8888 8888
-  forward 127.0.0.1 port 8888 to remote port 8888
+  forward local network 127.0.0.1 port 8888 to remote port 8888
   ```
 
   Rforward forwards the 192.168.204.103 port 8889 of the node1 network to the local 8889 port of the admin node.
   ```
   (node 1) >>> rforward 192.168.204.103 8889 8889
-  forward 192.168.204.103 port 8889 to local port 8889
+  forward remote network 192.168.204.103 port 8889 to local port 8889
   ```
 
 ### 3. attention

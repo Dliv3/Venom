@@ -248,13 +248,13 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
   ```
   (node 1) >>> lforward 127.0.0.1 8888 8888
-  forward 127.0.0.1 port 8888 to remote port 8888
+  forward local network 127.0.0.1 port 8888 to remote port 8888
   ```
 
   rforward 将node1网段的192.168.204.103端口8889转发到admin节点本地的8889端口 
   ```
   (node 1) >>> rforward 192.168.204.103 8889 8889
-  forward 192.168.204.103 port 8889 to local port 8889
+  forward remote network 192.168.204.103 port 8889 to local port 8889
   ```
 
 ### 3. 注意事项
