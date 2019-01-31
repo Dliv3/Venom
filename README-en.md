@@ -1,8 +1,8 @@
-## Venom - A Multi-hop Proxy for Attackers
+## Venom - A Multi-hop Proxy for Penetration Testers
 
 [简体中文](README.md)　｜　[English](README-en.md)
 
-Venom is a multi-hop proxy tool developed for attackers using Go.
+Venom is a multi-hop proxy tool developed for attackers penetration testers using Go.
 
 You can use venom to easily proxy network traffic to a multi-layer intranet, and easily manage intranet nodes.
 
@@ -86,7 +86,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
   This method will add the iptables rules, iptables forwards the traffic of the `reuse-port` to the `lport`, and then distribute the traffic by the agent.
 
-  One thing to note is that if the `sigterm`or `sigint` ends the agent (kill or ctrl-c), the agent can automatically clean up the iptables rules. If the agent is killed by `kill -9`, the iptables rule cannot be automatically cleaned up and needs to be cleaned manually because the agent program cannot deal with the sigkill signal.  
+  One thing to note is that if the `sigterm`or `sigint` ends the agent (kill or ctrl-c), the agent can automatically clean up the iptables rules. If the agent is killed by `kill -9`, the iptables rule cannot be automatically cleaned up and needs to be cleaned manually because the agent program cannot deal with the `sigkill` signal.  
 
   In order to prevent the iptables rules from being automatically cleaned up and the penetration tester cannot access the 80-port service, the second port reuse method uses `iptables -m recent` to control whether the iptables forwarding rules are enabled through special tcp packets.
 
@@ -233,7 +233,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   upload file successfully!
   ```
-  Download node1's file /tmp/test.pdf to your local /tmp/test2.pdf
+  Download node1's file /tmp/test2.pdf to your local /tmp/test3.pdf
   ```
   (node 1) >>> download /tmp/test2.pdf /tmp/test3.pdf
   download /tmp/test2.pdf from /tmp/test3.pdf

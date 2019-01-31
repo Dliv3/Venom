@@ -1,4 +1,4 @@
-## Venom - A Multi-hop Proxy for Attackers
+## Venom - A Multi-hop Proxy for Penetration Testers
 
 [简体中文](README.md)　｜　[English](README-en.md)
 
@@ -84,7 +84,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
   这种端口复用方法会在本机设置iptables规则，将`reuse-port`的流量转发到`lport`，再由agent分发流量
 
-  需要注意一点，如果通过`sigterm`，`sigint`信号结束程序(kill或ctrl-c)，程序可以自动清理iptables规则。如果agent被`kill -9`杀掉则无法自动清理iptables规则，需要手动清理，因为agent程序无法处理sigkill信号。
+  需要注意一点，如果通过`sigterm`，`sigint`信号结束程序(kill或ctrl-c)，程序可以自动清理iptables规则。如果agent被`kill -9`杀掉则无法自动清理iptables规则，需要手动清理，因为agent程序无法处理`sigkill`信号。
 
   为了避免iptables规则不能自动被清理导致渗透测试者无法访问80端口服务，所以第二种端口复用方法采用了`iptables -m recent`通过特殊的tcp包控制iptables转发规则是否开启。
 
@@ -224,7 +224,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   upload file successfully!
   ```
-  将node1的文件/tmp/test.pdf下载到本地的/tmp/test2.pdf
+  将node1的文件/tmp/test2.pdf下载到本地的/tmp/test3.pdf
   ```
   (node 1) >>> download /tmp/test2.pdf /tmp/test3.pdf
   download /tmp/test2.pdf from /tmp/test3.pdf
