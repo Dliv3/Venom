@@ -27,6 +27,8 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
 ## Usage
 
+> Venom demo videos: https://www.youtube.com/playlist?list=PLtZO9vwOND91vZ7yCmlAvISmEl2iQKjdI
+
 ### 1. admin/agent command line parameters
 
 - **Both the admin node and the agent node can act as a server or client.**
