@@ -151,7 +151,7 @@ func Interactive() {
 			if !checkCurrentPeerNode() {
 				break
 			}
-			fmt.Println("You can execute command in this shell :D, 'exit' to exit.")
+			fmt.Println("You can execute commands in this shell :D, 'exit' to exit.")
 			shellExit = false
 			dispather.SendShellCmd(peerNode)
 			shellExit = true
