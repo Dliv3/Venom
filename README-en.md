@@ -201,7 +201,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   use password (1) / ssh key (2)? 2
   file path of ssh key: /Users/dlive/.ssh/id_rsa
   connect to target host's 9999 through ssh tunnel (root@192.168.0.104:22).
-  ssh connect to remote node success!
+  ssh successfully connects to the remote node!
   (node 3) >>> show
   A
   + -- 1
@@ -214,7 +214,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
   ```
   (node 1) >>> shell
-  You can execute dispather in this shell :D, 'exit' to exit.
+  You can execute commands in this shell :D, 'exit' to exit.
   bash: no job control in this shell
   bash-3.2$ whoami
   whoami
