@@ -621,9 +621,9 @@ func SendSshConnectCmd(peerNode *node.Node, sshUser string, sshHost string, sshP
 	node.CurrentNode.CommandBuffers[protocol.SSHCONNECT].ReadPacket(&packetHeader, &sshConnectPacketRet)
 
 	if sshConnectPacketRet.Success == 1 {
-		fmt.Println("ssh connect to remote node success!")
+		fmt.Println("ssh successfully connect to the remote node!")
 	} else {
-		fmt.Println("ssh connect to remote node failed!")
+		fmt.Println("failed connect to the remote node !")
 		fmt.Println(string(sshConnectPacketRet.Msg))
 	}
 }
