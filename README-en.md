@@ -231,7 +231,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   ```  
   (node 1) >>> upload /tmp/test.pdf /tmp/test2.pdf
   upload /tmp/test.pdf to /tmp/test2.pdf
-  this file is too large(>100M), still uploading? (y/n)y
+  this file is too large(>100M), do you still want to upload? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   upload file successfully!
   ```
@@ -239,7 +239,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
   ```
   (node 1) >>> download /tmp/test2.pdf /tmp/test3.pdf
   download /tmp/test2.pdf from /tmp/test3.pdf
-  this file is too large(>100M), still downloading? (y/n)y
+  this file is too large(>100M), do you still want to download? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   download file successfully!
   ```
