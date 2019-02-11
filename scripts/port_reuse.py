@@ -9,12 +9,13 @@
 
 import socket
 import argparse
+import sys
 
-parser = argparse.ArgumentParser(description='start/stop iptables port reuse.')
-parser.add_argument('--start', help='start port reusing.', action='store_true')
-parser.add_argument('--stop', help='stop port reusing.', action='store_true')
-parser.add_argument('--rhost', help='remote host.', dest='ip')
-parser.add_argument('--rport', help='remote port.', dest='port')
+parser = argparse.ArgumentParser(description='start/stop iptables port reuse')
+parser.add_argument('--start', help='start port reusing', action='store_true')
+parser.add_argument('--stop', help='stop port reusing', action='store_true')
+parser.add_argument('--rhost', help='remote host', dest='ip')
+parser.add_argument('--rport', help='remote port', dest='port')
 
 START_PORT_REUSE = "venomcoming"
 STOP_PORT_REUSE = "venomleaving"
@@ -29,6 +30,8 @@ elif options.stop:
     data = STOP_PORT_REUSE
 else:
     parser.print_help()
+    sys.exit(0)
+
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(2)
