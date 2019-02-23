@@ -25,6 +25,23 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
 > Since the IoT device (arm/mips/... architecture) usually has limited resources, in order to reduce the size of the binary file, the binaries for the IoT environment do not support port reuse and ssh tunnel, and in order to reduce memory usage, the binaries only support less network concurrency and smaller buffers.
 
+## Installation
+
+You can directly download the executable files from https://github.com/Dliv3/Venom/releases
+
+If you want to compile the project from source, you need to install **go >= 1.11**, then execute the following command
+
+```
+go get -u github.com/Dliv3/Venom/...
+
+# $GOPATH is the environment variable configured when Go is installed. It can be viewed by the 'go env' command.
+cd $GOPATH/src/github.com/Dliv3/Venom
+
+./build.sh
+
+# Compiled binary files are stored in the release folder in the current directory.
+```
+
 ## Usage
 
 > Venom demo videos: https://www.youtube.com/playlist?list=PLtZO9vwOND91vZ7yCmlAvISmEl2iQKjdI
