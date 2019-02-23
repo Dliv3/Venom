@@ -29,7 +29,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 
 You can directly download the executable files from https://github.com/Dliv3/Venom/releases
 
-If you want to compile the project from source, you need to install **go >= 1.11**, then execute the following command
+If you want to compile the project from source, you need to install **go >= 1.11**, then execute the following commands.
 
 ```
 go get -u github.com/Dliv3/Venom/...
