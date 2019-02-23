@@ -28,7 +28,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 
 ## 安装
 
-您可以直接下载使用release(https://github.com/Dliv3/Venom/releases)中编译好的可执行文件
+您可以直接下载使用[release](https://github.com/Dliv3/Venom/releases)中编译好的可执行文件
 
 如果您想从源码编译该项目, 需要安装 go >= 1.11, 然后执行下面的命令
 
@@ -38,9 +38,8 @@ go get -u github.com/Dliv3/Venom/...
 # $GOPATH是安装Go时配置的环境变量，可通过go env命令查看
 cd $GOPATH/src/github.com/Dliv3/Venom
 
-./build.sh
-
 # 编译好的二进制文件存放在当前目录下的release文件夹中
+./build.sh
 ```
 
 ## 使用

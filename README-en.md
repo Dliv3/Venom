@@ -37,9 +37,8 @@ go get -u github.com/Dliv3/Venom/...
 # $GOPATH is the environment variable configured when Go is installed. It can be viewed by the 'go env' command.
 cd $GOPATH/src/github.com/Dliv3/Venom
 
-./build.sh
-
 # Compiled binary files are stored in the release folder in the current directory.
+./build.sh
 ```
 
 ## Usage
