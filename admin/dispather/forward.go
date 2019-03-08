@@ -2,7 +2,6 @@ package dispather
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"runtime"
 
@@ -30,7 +29,7 @@ func CopyStdin2Node(input io.Reader, output *node.Node, c chan bool) {
 		} else {
 			buf = orgBuf
 		}
-		fmt.Println(buf[:count])
+		// fmt.Println(buf[:count])
 
 		data := protocol.ShellPacketCmd{
 			Start:  1,
