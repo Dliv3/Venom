@@ -1,7 +1,10 @@
 package dispather
 
 import (
+	"bytes"
+	"fmt"
 	"io"
+	"runtime"
 
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/node"
@@ -11,10 +14,24 @@ import (
 
 func CopyStdin2Node(input io.Reader, output *node.Node, c chan bool) {
 
-	buf := make([]byte, global.MAX_PACKET_SIZE-8)
+	orgBuf := make([]byte, global.MAX_PACKET_SIZE-8)
 
 	for {
-		count, err := input.Read(buf)
+		count, err := input.Read(orgBuf)
+
+		fmt.Println(orgBuf[:count])
+
+		var buf []byte
+
+		// // delete \r
+		if runtime.GOOS == "windows" {
+			buf = bytes.Replace(orgBuf[:count], []byte("\r"), []byte(""), -1)
+			count = len(buf)
+		} else {
+			buf = orgBuf
+		}
+		fmt.Println(buf[:count])
+
 		data := protocol.ShellPacketCmd{
 			Start:  1,
 			CmdLen: uint32(count),

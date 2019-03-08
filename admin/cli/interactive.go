@@ -13,6 +13,7 @@ import (
 
 	"github.com/Dliv3/Venom/admin/dispather"
 	"github.com/Dliv3/Venom/node"
+	"github.com/Dliv3/Venom/utils"
 )
 
 // admin节点想要操作的对端节点的ID，主要用于goto命令
@@ -151,10 +152,12 @@ func Interactive() {
 			if !checkCurrentPeerNode() {
 				break
 			}
+			utils.HandleWindowsCR()
 			fmt.Println("You can execute commands in this shell :D, 'exit' to exit.")
 			shellExit = false
 			dispather.SendShellCmd(peerNode)
 			shellExit = true
+			continue
 		case "upload":
 			if !checkCurrentPeerNode() {
 				break
@@ -258,8 +261,11 @@ func Interactive() {
 			}
 		case "exit":
 			os.Exit(0)
+		case "":
+			continue
 		default:
 			fmt.Println("unknown command, use \"help\" to see all commands.")
 		}
+		utils.HandleWindowsCR()
 	}
 }

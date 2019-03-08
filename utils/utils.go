@@ -210,3 +210,12 @@ func RemoveDuplicateElement(addrs []string) []string {
 	}
 	return result
 }
+
+/* --------------------- handling windows \r ------------------------------*/
+func HandleWindowsCR() {
+	if runtime.GOOS == "windows" {
+		var noUse string
+		fmt.Scanf("%s", &noUse)
+		// fmt.Println("windows :", []byte(noUse))
+	}
+}

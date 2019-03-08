@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 )
 
 // COMMAND LINE INTERFACE
@@ -63,7 +64,11 @@ func ParseArgs() {
 }
 
 func PrintBanner(data string) {
-	fmt.Printf("\x1b[0;34m%s \x1b[0m", data)
+	if runtime.GOOS == "windows" {
+		fmt.Printf(data)
+	} else {
+		fmt.Printf("\x1b[0;34m%s \x1b[0m", data)
+	}
 	fmt.Println()
 }
 
