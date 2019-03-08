@@ -1,7 +1,9 @@
 package main
 
 import (
+	"os/signal"
 	"runtime"
+	"syscall"
 
 	"github.com/Dliv3/Venom/agent/cli"
 	"github.com/Dliv3/Venom/agent/dispather"
@@ -14,11 +16,12 @@ func main() {
 
 	cli.ParseArgs()
 
+	// ignore sighup
+	signal.Ignore(syscall.SIGHUP)
+
 	node.CurrentNode.IsAdmin = 0
 	node.CurrentNode.InitCommandBuffer()
 	node.CurrentNode.InitDataBuffer()
-
-	// fmt.Println(node.CurrentNode.HashID)
 
 	dispather.InitAgentHandler()
 
