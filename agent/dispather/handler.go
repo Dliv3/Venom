@@ -27,7 +27,7 @@ var ERR_FILE_NOT_EXISTS = errors.New("remote file not exists")
 func AgentClient(conn net.Conn) {
 	result, peerNode := node.ClentInitConnection(conn)
 	if result {
-		log.Println("[+]Connect to a new node success")
+		log.Println("[+]Successfully connects to a new node")
 		go node.CurrentNode.CommandHandler(peerNode)
 	}
 }
@@ -37,7 +37,7 @@ func AgentServer(conn net.Conn) {
 	log.Println("[+]Remote connection: ", conn.RemoteAddr())
 	result, peerNode := node.ServerInitConnection(conn)
 	if result {
-		log.Println("[+]A new node connect to this node success")
+		log.Println("[+]A new node successfully connects to this node")
 		go node.CurrentNode.CommandHandler(peerNode)
 	}
 }
