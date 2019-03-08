@@ -19,7 +19,7 @@ func CopyStdin2Node(input io.Reader, output *node.Node, c chan bool) {
 	for {
 		count, err := input.Read(orgBuf)
 
-		fmt.Println(orgBuf[:count])
+		// fmt.Println(orgBuf[:count])
 
 		var buf []byte
 
