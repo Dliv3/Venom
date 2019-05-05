@@ -476,14 +476,14 @@ func localSocks5Server(conn net.Conn, peerNodeID string, done chan bool, args ..
 	go node.CopyNode2Net(peerNode, conn, currentSessionID, protocol.SOCKSDATA, c)
 
 	if err := AdminHandShake(conn, peerNode, currentSessionID); err != nil {
-		fmt.Println("socks handshake:")
-		fmt.Println(err)
+		// fmt.Println("socks handshake:")
+		// fmt.Println(err)
 		return
 	}
 	_, err := AdminParseTarget(conn, peerNode, currentSessionID)
 	if err != nil {
-		fmt.Println("socks consult transfer mode or parse target :")
-		fmt.Println(err)
+		// fmt.Println("socks consult transfer mode or parse target :")
+		// fmt.Println(err)
 		return
 	}
 
