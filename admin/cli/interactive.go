@@ -103,6 +103,9 @@ func Interactive() {
 			fmt.Println("node", tmpNodeID)
 			if _, ok := node.GNodeInfo.NodeNumber2UUID[tmpNodeID]; ok {
 				nodeID = tmpNodeID
+			} else if tmpNodeID == 0 {
+				currentPeerNodeHashID = ""
+				break
 			} else {
 				fmt.Println("unknown node id.")
 				break

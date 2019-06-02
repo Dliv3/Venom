@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 	"sync"
 
 	"github.com/Dliv3/Venom/global"
@@ -34,6 +35,9 @@ type Node struct {
 	// Socks5Running bool // 防止admin node在一个agent上开启多个连接
 }
 
+// tcp协议栈错误, net包中无对应error
+const errTcpClosed = "wsarecv: An existing connection was forcibly closed by the remote host."
+
 func NewNode(isAdmin uint16, hashID string, conn net.Conn, directConnection bool) *Node {
 	newNode := &Node{
 		HashID:           hashID,
@@ -55,6 +59,13 @@ func (node *Node) CommandHandler(peerNode *Node) {
 		err := peerNode.ReadLowLevelPacket(&lowLevelPacket)
 		if err != nil {
 			fmt.Println("node disconnect: ", err)
+
+			// if remote node closed the tcp connection
+			// then close the channel, to prevent blocking
+			if strings.Contains(err.Error(), errTcpClosed) {
+				close(node.CommandBuffers[protocol.SHELL].Chan)
+				node.CommandBuffers[protocol.SHELL] = NewBuffer()
+			}
 			return
 		}
 		switch utils.Array32ToUUID(lowLevelPacket.DstHashID) {
