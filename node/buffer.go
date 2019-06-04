@@ -25,8 +25,8 @@ func (buffer *Buffer) ReadLowLevelPacket() (protocol.Packet, error) {
 	switch packet.(type) {
 	case protocol.Packet:
 		return packet.(protocol.Packet), nil
-	// case error:
-	// 	return protocol.Packet{}, io.EOF
+	case error:
+		return protocol.Packet{}, io.EOF
 	default:
 		return protocol.Packet{}, errors.New("Data Type Error")
 	}

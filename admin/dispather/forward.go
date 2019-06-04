@@ -30,28 +30,28 @@ func CopyStdin2Node(input io.Reader, output *node.Node, c chan bool) {
 			buf = orgBuf
 		}
 		// fmt.Println(buf[:count])
-
-		data := protocol.ShellPacketCmd{
-			Start:  1,
-			CmdLen: uint32(count),
-			Cmd:    buf[:count],
-		}
-		packetHeader := protocol.PacketHeader{
-			Separator: global.PROTOCOL_SEPARATOR,
-			CmdType:   protocol.SHELL,
-			SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
-			DstHashID: utils.UUIDToArray32(output.HashID),
+		if count > 0 {
+			data := protocol.ShellPacketCmd{
+				Start:  1,
+				CmdLen: uint32(count),
+				Cmd:    buf[:count],
+			}
+			packetHeader := protocol.PacketHeader{
+				Separator: global.PROTOCOL_SEPARATOR,
+				CmdType:   protocol.SHELL,
+				SrcHashID: utils.UUIDToArray32(node.CurrentNode.HashID),
+				DstHashID: utils.UUIDToArray32(output.HashID),
+			}
+			writeErr := output.WritePacket(packetHeader, data)
+			if writeErr != nil {
+				// 强制结束 CommandBuffers[protocol.SHELL]
+				node.CurrentNode.CommandBuffers[protocol.SHELL].WriteCloseMessage()
+			}
+			if string(buf[:count]) == "exit\n" {
+				break
+			}
 		}
 		if err != nil {
-			if count > 0 {
-				output.WritePacket(packetHeader, data)
-			}
-			break
-		}
-		if count > 0 {
-			output.WritePacket(packetHeader, data)
-		}
-		if string(buf[:count]) == "exit\n" {
 			break
 		}
 	}
