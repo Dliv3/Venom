@@ -23,6 +23,9 @@ func checkCurrentPeerNode() bool {
 	if currentPeerNodeHashID == "" {
 		fmt.Println("you should select node first")
 		return false
+	} else if node.Nodes[currentPeerNodeHashID] == nil {
+		fmt.Println("the node is disconnected.")
+		return false
 	}
 	return true
 }
