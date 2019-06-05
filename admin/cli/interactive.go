@@ -169,7 +169,7 @@ func Interactive() {
 			var remotePath string
 
 			fmt.Scanf("%s %s", &localPath, &remotePath)
-			fmt.Println("upload", localPath, "to", remotePath)
+			fmt.Println("upload", localPath, fmt.Sprintf("to node %d:", nodeID), remotePath)
 			dispather.SendUploadCmd(peerNode, localPath, remotePath)
 		case "download":
 			if !checkCurrentPeerNode() {
@@ -178,7 +178,7 @@ func Interactive() {
 			var remotePath string
 			var localPath string
 			fmt.Scanf("%s %s", &remotePath, &localPath)
-			fmt.Println("download", remotePath, "from", localPath)
+			fmt.Println("download", localPath, fmt.Sprintf("from node %d:", nodeID), remotePath)
 			dispather.SendDownloadCmd(peerNode, remotePath, localPath)
 		case "lforward":
 			if !checkCurrentPeerNode() {
