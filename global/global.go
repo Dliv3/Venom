@@ -17,3 +17,6 @@ const PROTOCOL_SEPARATOR = "VCMD"
 
 // 协议特征, 用于在端口重用时鉴别
 const PROTOCOL_FEATURE = "ABCDEFGH"
+
+
+const AES_KEY = "3b762cc137d55f4dcf4fe184ccc1dc15"

@@ -5,8 +5,12 @@ package netio
 import (
 	"errors"
 	"fmt"
+	"github.com/Dliv3/Venom/myConn"
 	"log"
 	"net"
+	"reflect"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/Dliv3/Venom/global"
@@ -29,13 +33,19 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 			return err
 		}
 
-		conn, err := net.DialTCP("tcp", nil, addr)
+		conn_nocrypt, err := net.DialTCP("tcp", nil, addr)
 		if err != nil {
 			log.Println("[-]DialTCP error:", err)
 			return err
 		}
 
-		conn.SetKeepAlive(true)
+		conn_nocrypt.SetKeepAlive(true)
+
+		conn, err := myConn.NewSecureConn(conn_nocrypt)
+		if err != nil {
+			log.Println("[-]NewSecureConn error:", err)
+			return err
+		}
 
 		go handlerFunc(conn)
 
@@ -62,10 +72,22 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 
 		go func() {
 			for {
-				conn, err := listener.Accept()
+				conn_nocrypt, err := listener.Accept()
 				if err != nil {
 					log.Println("[-]Accept error:", err)
 					continue
+				}
+				/*  add by 00theway to encrypt net flows*/
+				var conn net.Conn
+				if strings.Index(runtime.FuncForPC(reflect.ValueOf(handlerFunc).Pointer()).Name(),"localSocks5Server") != -1 {
+					conn = conn_nocrypt
+
+				}else {
+					conn,err = myConn.NewSecureConn(conn_nocrypt)
+					if err != nil {
+						log.Println("[-]NewSecureConn error:", err)
+						continue
+					}
 				}
 
 				if portReuse {
@@ -79,11 +101,26 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 								return
 							}
 
-							server, err := net.DialTCP("tcp", nil, addr)
+							server_nocrypt, err := net.DialTCP("tcp", nil, addr)
 							if err != nil {
 								log.Println("[-]DialTCP error:", err)
 								return
 							}
+
+
+							/*  add by 00theway to encrypt net flows*/
+							var server net.Conn
+							if strings.Index(runtime.FuncForPC(reflect.ValueOf(handlerFunc).Pointer()).Name(),"localSocks5Server") != -1 {
+								server = server_nocrypt
+
+							}else {
+								server,err = myConn.NewSecureConn(server_nocrypt)
+								if err != nil {
+									log.Println("[-]NewSecureConn error:", err)
+									return
+								}
+							}
+
 
 							Write(server, data)
 							go NetCopy(conn, server)

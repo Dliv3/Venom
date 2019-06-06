@@ -8,6 +8,10 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"reflect"
+	"runtime"
+	"strings"
+	"github.com/Dliv3/Venom/myConn"
 )
 
 var INIT_TYPE_ERROR = errors.New("init type error")
@@ -24,13 +28,19 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 			return err
 		}
 
-		conn, err := net.DialTCP("tcp", nil, addr)
+		conn_nocrypt, err := net.DialTCP("tcp", nil, addr)
 		if err != nil {
 			log.Println("[-]DialTCP error:", err)
 			return err
 		}
 
-		conn.SetKeepAlive(true)
+		conn_nocrypt.SetKeepAlive(true)
+
+		conn, err := myConn.NewSecureConn(conn_nocrypt)
+		if err != nil {
+			log.Println("[-]NewSecureConn error:", err)
+			return err
+		}
 
 		go handlerFunc(conn)
 
@@ -53,10 +63,23 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 
 		go func() {
 			for {
-				conn, err := listener.Accept()
+				conn_nocrypt, err := listener.Accept()
 				if err != nil {
 					log.Println("[-]Accept error:", err)
 					continue
+				}
+
+				/*  add by 00theway to encrypt net flows*/
+				var conn net.Conn
+				if strings.Index(runtime.FuncForPC(reflect.ValueOf(handlerFunc).Pointer()).Name(),"localSocks5Server") != -1 {
+					conn = conn_nocrypt
+
+				}else {
+					conn,err = myConn.NewSecureConn(conn_nocrypt)
+					if err != nil {
+						log.Println("[-]NewSecureConn error:", err)
+						continue
+					}
 				}
 
 				go handlerFunc(conn)

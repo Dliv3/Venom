@@ -1,8 +1,12 @@
 package netio
 
 import (
+	"github.com/Dliv3/Venom/myConn"
 	"log"
 	"net"
+	"reflect"
+	"runtime"
+	"strings"
 
 	"github.com/Dliv3/Venom/global"
 )
@@ -17,9 +21,15 @@ func InitTCP(tcpType string, tcpService string, peerNodeID string, handlerFunc f
 			return err
 		}
 
-		conn, err := net.DialTCP("tcp", nil, addr)
+		conn_nocrypt, err := net.DialTCP("tcp", nil, addr)
 		if err != nil {
 			log.Println("[-]DialTCP error:", err)
+			return err
+		}
+
+		conn, err := myConn.NewSecureConn(conn_nocrypt)
+		if err != nil {
+			log.Println("[-]NewSecureConn error:", err)
 			return err
 		}
 
@@ -48,11 +58,25 @@ func InitTCP(tcpType string, tcpService string, peerNodeID string, handlerFunc f
 			c := make(chan bool, global.TCP_MAX_CONNECTION)
 			for {
 				c <- true
-				conn, err := listener.Accept()
+				conn_nocrypt, err := listener.Accept()
 				if err != nil {
 					log.Println("[-]Accept error:", err)
 					continue
 				}
+				/*  add by 00theway to encrypt net flows*/
+				var conn net.Conn
+
+				if strings.Index(runtime.FuncForPC(reflect.ValueOf(handlerFunc).Pointer()).Name(),"localSocks5Server") != -1 {
+					conn = conn_nocrypt
+
+				}else {
+					conn,err = myConn.NewSecureConn(conn_nocrypt)
+					if err != nil {
+						log.Println("[-]NewSecureConn error:", err)
+						continue
+					}
+				}
+
 				go handlerFunc(conn, peerNodeID, c, args)
 			}
 		}()
