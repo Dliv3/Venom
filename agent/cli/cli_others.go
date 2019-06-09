@@ -27,7 +27,7 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, `Venom version: 1.0
+	fmt.Fprintf(os.Stderr, `Venom version: 1.1
 
 Usage:
 	$ ./venom_agent -lport [port]
