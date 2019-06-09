@@ -14,7 +14,10 @@ const TCP_MAX_CONNECTION = 16
 const BUFFER_SIZE = 64
 
 // 协议数据分隔符
-const PROTOCOL_SEPARATOR = "VCMD"
+var PROTOCOL_SEPARATOR = "VCMD"
 
 // 协议特征, 用于在端口重用时鉴别
-const PROTOCOL_FEATURE = "ABCDEFGH"
+var PROTOCOL_FEATURE = "ABCDEFGH"
+
+// 密钥
+var SECRET_KEY []byte

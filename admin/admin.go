@@ -6,6 +6,7 @@ import (
 
 	"github.com/Dliv3/Venom/admin/cli"
 	"github.com/Dliv3/Venom/admin/dispather"
+	"github.com/Dliv3/Venom/crypto"
 	"github.com/Dliv3/Venom/netio"
 	"github.com/Dliv3/Venom/node"
 )
@@ -21,6 +22,7 @@ func main() {
 	// fmt.Println(node.CurrentNode.HashID)
 
 	node.CurrentNode.IsAdmin = 1
+	crypto.InitEncryption(cli.Args.Password)
 	node.CurrentNode.InitCommandBuffer()
 	node.CurrentNode.InitDataBuffer()
 

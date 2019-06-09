@@ -178,27 +178,39 @@ func (node *Node) WriteLowLevelPacket(packet interface{}) error {
 	return nil
 }
 
-func (node *Node) ReadPacket(header *protocol.PacketHeader, packet interface{}) error {
-	node.ConnReadLock.Lock()
-	defer node.ConnReadLock.Unlock()
+// func (node *Node) ReadPacket(header *protocol.PacketHeader, packet interface{}) error {
+// 	node.ConnReadLock.Lock()
+// 	defer node.ConnReadLock.Unlock()
 
-	// 读数据包的头部字段
-	err := netio.ReadPacket(node.Conn, header)
-	if err != nil {
-		return err
-	}
-	// 读数据包的数据字段
-	err = netio.ReadPacket(node.Conn, packet)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// 	// 读数据包的头部字段
+// 	err := netio.ReadPacket(node.Conn, header)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	// 读数据包的数据字段
+// 	err = netio.ReadPacket(node.Conn, packet)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 func (node *Node) WritePacket(header protocol.PacketHeader, packet interface{}) error {
 
 	node.ConnWriteLock.Lock()
 	defer node.ConnWriteLock.Unlock()
+
+	if global.SECRET_KEY != nil {
+		// 加密, 将Packet.Data部分整个加密
+		cryptPacket := protocol.Packet{}
+		cryptPacket.PackHeader(header)
+		cryptPacket.PackData(packet)
+		err := netio.WritePacket(node.Conn, cryptPacket)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 
 	// 写数据包的头部字段
 	header.DataLen, _ = utils.PacketSize(packet)

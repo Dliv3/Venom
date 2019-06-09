@@ -7,6 +7,7 @@ import (
 	"net"
 	"reflect"
 
+	"github.com/Dliv3/Venom/crypto"
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/utils"
 )
@@ -143,7 +144,7 @@ func ReadPacket(input io.Reader, packet interface{}) error {
 			}
 			// 如果长度为0，就不需要读数据了
 			if length != 0 {
-				if length > global.MAX_PACKET_SIZE {
+				if length > global.MAX_PACKET_SIZE+uint64(crypto.OVERHEAD) {
 					return nil
 				}
 				buf := make([]byte, length)

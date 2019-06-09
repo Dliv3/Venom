@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/Dliv3/Venom/crypto"
 	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/netio"
 	"github.com/Dliv3/Venom/node"
@@ -58,7 +59,7 @@ func handleLForward() {
 		lhost := utils.Uint32ToIp(lforwardPacketRet.LHost).String()
 		sport := lforwardPacketRet.SrcPort
 
-		if _, ok := LForwardTarget[utils.Sha256(fmt.Sprintf("%s:%d", lhost, sport))]; !ok {
+		if _, ok := LForwardTarget[crypto.Sha256(fmt.Sprintf("%s:%d", lhost, sport))]; !ok {
 			continue
 		}
 

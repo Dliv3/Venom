@@ -3,6 +3,8 @@ package protocol
 import (
 	"bytes"
 
+	"github.com/Dliv3/Venom/crypto"
+	"github.com/Dliv3/Venom/global"
 	"github.com/Dliv3/Venom/netio"
 )
 
@@ -41,7 +43,28 @@ type Packet struct {
 
 // ResolveData 解析Packet Data字段的数据为特定格式的数据包
 func (packet *Packet) ResolveData(cmdPacket interface{}) {
+	// 如果有解密需求, 先解密
+	if global.SECRET_KEY != nil {
+		// fmt.Println(packet.DataLen)
+		// fmt.Println(packet.Data)
+		packet.Data, _ = crypto.Decrypt(packet.Data, global.SECRET_KEY)
+		packet.DataLen = uint64(len(packet.Data))
+	}
+	// fmt.Println(packet.Data)
+	// fmt.Println(packet.DataLen)
 	netio.ReadPacket(bytes.NewBuffer(packet.Data), cmdPacket)
+}
+
+// PackData 将cmdPacket打包成byte
+func (packet *Packet) PackData(cmdPacket interface{}) {
+	tmpBuffer := new(bytes.Buffer)
+	netio.WritePacket(tmpBuffer, cmdPacket)
+	packet.Data = tmpBuffer.Bytes()
+	// 如果有加密需求, 后加密
+	if global.SECRET_KEY != nil {
+		packet.Data, _ = crypto.Encrypt(packet.Data, global.SECRET_KEY)
+	}
+	packet.DataLen = uint64(len(packet.Data))
 }
 
 // ResolveHeader 解析Packet数据包中PacketHeader字段
@@ -51,6 +74,14 @@ func (packet *Packet) ResolveHeader(header *PacketHeader) {
 	header.SrcHashID = packet.SrcHashID
 	header.DstHashID = packet.DstHashID
 	header.DataLen = packet.DataLen
+}
+
+func (packet *Packet) PackHeader(header PacketHeader) {
+	packet.Separator = header.Separator
+	packet.CmdType = header.CmdType
+	packet.SrcHashID = header.SrcHashID
+	packet.DstHashID = header.DstHashID
+	packet.DataLen = header.DataLen
 }
 
 type PacketHeader struct {

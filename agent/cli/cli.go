@@ -24,6 +24,8 @@ type Option struct {
 	// 1 通过SO_REUSEADDR、SO_REUSEPORT进行端口复用
 	// 2 通过iptables端口复用
 	PortReuseMethod int
+
+	Password string
 }
 
 // Args

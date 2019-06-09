@@ -20,6 +20,7 @@ func init() {
 	flag.IntVar(&Args.RemotePort, "rport", 0, "The `port` on remote host.")
 	flag.StringVar(&Args.RemoteIP, "rhost", "", "Remote `ip` address.")
 	flag.IntVar(&Args.ReusedPort, "reuse-port", 0, "Reused port.")
+	flag.StringVar(&Args.Password, "passwd", "", "Password used in encrypted communication.")
 
 	// 改变默认的 Usage
 	flag.Usage = usage

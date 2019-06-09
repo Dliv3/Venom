@@ -19,6 +19,7 @@ type Option struct {
 	RemoteIP   string
 	RemotePort int
 	Mode       int
+	Password   string
 }
 
 // Args
@@ -28,7 +29,7 @@ func init() {
 	flag.IntVar(&Args.LocalPort, "lport", 0, "Listen a local `port`.")
 	flag.StringVar(&Args.RemoteIP, "rhost", "", "Remote `ip` address.")
 	flag.IntVar(&Args.RemotePort, "rport", 0, "The `port` on remote host.")
-
+	flag.StringVar(&Args.Password, "passwd", "", "Password used in encrypted communication.")
 	// change default Usage
 	flag.Usage = usage
 }
@@ -74,7 +75,7 @@ func PrintBanner(data string) {
 
 func ShowBanner() {
 	PrintBanner(`
-  ____   ____   author: Dlive   v1.0
+  ____   ____  { v1.1  author: Dlive }
   \   \ /   /____   ____   ____   _____
    \   Y   // __ \ /    \ /    \ /     \
     \     /\  ___/|   |  (  <_> )  Y Y  \

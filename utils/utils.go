@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"crypto/md5"
-	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
@@ -14,6 +12,8 @@ import (
 	"reflect"
 	"runtime"
 	"time"
+
+	"github.com/Dliv3/Venom/crypto"
 )
 
 /* -------------------------- encoding/decoding ------------------------------ */
@@ -29,26 +29,12 @@ func Array32ToUUID(bytes [32]byte) string {
 	return fmt.Sprintf("%x", bytes)
 }
 
-/* -----------------------  Hash/Random number --------------------------- */
+/* -----------------------  Random number --------------------------- */
 
 // NewUUID New Universally Unique Identifier
 // TODO use https://github.com/satori/go.uuid to generate UUID
 func NewUUID() string {
-	return Sha256(time.Now().Format(time.ANSIC) + GetRandomString(5))
-}
-
-// Sha256 Hash
-func Sha256(text string) string {
-	ctx := sha256.New()
-	ctx.Write([]byte(text))
-	return hex.EncodeToString(ctx.Sum(nil))
-}
-
-// Md5 Hash
-func Md5(text string) string {
-	ctx := md5.New()
-	ctx.Write([]byte(text))
-	return hex.EncodeToString(ctx.Sum(nil))
+	return crypto.Sha256(time.Now().Format(time.ANSIC) + GetRandomString(5))
 }
 
 // GetRandomString generate a random string
