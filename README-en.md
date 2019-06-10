@@ -21,6 +21,7 @@ You can use venom to easily proxy network traffic to a multi-layer intranet, and
 - ssh tunnel 
 - interactive shell
 - upload and download file
+- network traffic encryption
 - supports multiple platforms(Linux/Windows/MacOS) and multiple architectures(x86/x64/arm/mips)
 
 > Since the IoT device (arm/mips/... architecture) usually has limited resources, in order to reduce the size of the binary file, the binaries for the IoT environment do not support port reuse and ssh tunnel, and in order to reduce memory usage, the binaries only support less network concurrency and smaller buffers.
@@ -121,6 +122,17 @@ cd $GOPATH/src/github.com/Dliv3/Venom
   # If you want to turn off iptables port reuse rules
   python scripts/port_reuse.py --stop --rhost 192.168.204.135 --rport 80
     ```
+- **network traffic encryption**
+
+  Users can specify a password with the `-passwd` option, which is used to generate the key required for AES encryption.
+
+  ```
+  # Specify the password as dlive@dubhe with -passwd
+  ./admin_macos_x64 -lport 8889 -passwd dlive@dubhe
+  
+  # The agent specifies the same password to connect with the admin node
+  ./agent_macos_x64 -rhost 192.168.0.103 -rport 8889 -passwd dlive@dubhe
+  ```
 
 ### 2. admin node built-in commands
 
@@ -246,7 +258,7 @@ cd $GOPATH/src/github.com/Dliv3/Venom
 
   ```  
   (node 1) >>> upload /tmp/test.pdf /tmp/test2.pdf
-  upload /tmp/test.pdf to /tmp/test2.pdf
+  upload /tmp/test.pdf to node 1: /tmp/test2.pdf
   this file is too large(>100M), do you still want to upload it? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   upload file successfully!
@@ -254,7 +266,7 @@ cd $GOPATH/src/github.com/Dliv3/Venom
   Download node1's file /tmp/test2.pdf to your local /tmp/test3.pdf
   ```
   (node 1) >>> download /tmp/test2.pdf /tmp/test3.pdf
-  download /tmp/test2.pdf from /tmp/test3.pdf
+  download /tmp/test2.pdf from node 1: /tmp/test3.pdf
   this file is too large(>100M), do you still want to download it? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   download file successfully!
@@ -292,12 +304,12 @@ cd $GOPATH/src/github.com/Dliv3/Venom
 
 ## TODO
 
-- combined with regeorg
-- multiple administrator nodes
-- network traffic encryption
-- support socks5 udp
-- RESTful API
-- combined with meterpreter (to be discussed)
+- [ ] combined with regeorg
+- [ ] multiple administrator nodes
+- [x] network traffic encryption
+- [ ] support socks5 udp
+- [ ] RESTful API
+- [ ] combined with meterpreter (to be discussed)
 
 ## Acknowledgement
 

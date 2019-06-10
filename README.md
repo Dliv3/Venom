@@ -22,6 +22,7 @@ Venom可将多个节点进行连接，然后以节点为跳板，构建多级代
 - ssh隧道
 - 交互式shell
 - 文件的上传和下载
+- 节点间通信加密
 - 支持多种平台(Linux/Windows/MacOS)和多种架构(x86/x64/arm/mips)
 
 > 由于IoT设备（arm/mips/...架构）通常资源有限，为了减小二进制文件的大小，该项目针对IoT环境编译的二进制文件不支持端口复用和ssh隧道这两个功能，并且为了减小内存使用限制了网络并发数和缓冲区大小。
@@ -118,6 +119,18 @@ cd $GOPATH/src/github.com/Dliv3/Venom
   
   # 如果要关闭转发规则
   python scripts/port_reuse.py --stop --rhost 192.168.204.135 --rport 80
+  ```
+
+- **节点间通信加密**
+
+  Venom提供节点间通信加密功能，用户可通过`-passwd`选项指定密码，该密码用于生成AES加密所需的密钥。
+
+  ```
+  # 通过-passwd指定密码为dlive@dubhe
+  ./admin_macos_x64 -lport 8889 -passwd dlive@dubhe
+  
+  # agent指定相同的密码与admin节点连接
+  ./agent_macos_x64 -rhost 192.168.0.103 -rport 8889 -passwd dlive@dubhe
   ```
 
 ### 2. admin节点内置命令
@@ -237,7 +250,7 @@ cd $GOPATH/src/github.com/Dliv3/Venom
 
   ```
   (node 1) >>> upload /tmp/test.pdf /tmp/test2.pdf
-  upload /tmp/test.pdf to /tmp/test2.pdf
+  upload /tmp/test.pdf to node 1: /tmp/test2.pdf
   this file is too large(>100M), do you still want to upload it? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   upload file successfully!
@@ -245,7 +258,7 @@ cd $GOPATH/src/github.com/Dliv3/Venom
   将node1的文件/tmp/test2.pdf下载到本地的/tmp/test3.pdf
   ```
   (node 1) >>> download /tmp/test2.pdf /tmp/test3.pdf
-  download /tmp/test2.pdf from /tmp/test3.pdf
+  download /tmp/test2.pdf from node 1: /tmp/test3.pdf
   this file is too large(>100M), do you still want to download it? (y/n)y
    154.23 MiB / 154.23 MiB [========================================] 100.00% 1s
   download file successfully!
@@ -283,12 +296,12 @@ cd $GOPATH/src/github.com/Dliv3/Venom
 
 ## TODO
 
-- 与regeorg联动
-- 多个admin节点同时对网络进行管理
-- 节点间通信流量加密
-- socks5对udp的支持
-- 与meterpreter联动 (待定)
-- RESTful API
+- [ ] 与regeorg联动
+- [ ] 多个admin节点同时对网络进行管理
+- [x] 节点间通信流量加密
+- [ ] socks5对udp的支持
+- [ ] 与meterpreter联动 (待定)
+- [ ] RESTful API
 
 ## 致谢
 
