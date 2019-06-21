@@ -6,11 +6,13 @@ package init
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Dliv3/Venom/agent/cli"
 	"github.com/Dliv3/Venom/agent/dispather"
 	"github.com/Dliv3/Venom/netio"
 	"github.com/Dliv3/Venom/utils"
+	"github.com/Dliv3/Venom/node"
 )
 
 func InitNode() {
@@ -43,11 +45,20 @@ func InitNode() {
 				dispather.AgentServer, false, 0)
 		}
 	} else {
-		// 连接端口
-		netio.InitNode(
-			"connect",
-			fmt.Sprintf("%s:%d", cli.Args.RemoteIP, uint16(cli.Args.RemotePort)),
-			dispather.AgentClient, false, 0)
+		
+		go func(){//开启无限重连线程
+			for{
+				//如果没有存活的命令处理，意思是没连上，就等5秒后重连
+				if node.CurrentNode.AliveCommandHandlerCount==0{
+					// 连接端口
+					netio.InitNode(
+						"connect",
+						fmt.Sprintf("%s:%d", cli.Args.RemoteIP, uint16(cli.Args.RemotePort)),
+						dispather.AgentClient, false, 0)
+				}
+				time.Sleep(5 * time.Second)
+			}
+		}()
 	}
 
 	var exit string

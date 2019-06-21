@@ -17,6 +17,7 @@ type Node struct {
 	IsAdmin uint16   // Node是否是Admin
 	HashID  string   // Node的HashID
 	Conn    net.Conn // 与Node的TCP连接
+	AliveCommandHandlerCount    int //指令处理线程的数量
 
 	// Conn的锁，因为Conn读写Packet的时候如果不加锁，多个routine会出现乱序的情况
 	ConnReadLock  *sync.Mutex
@@ -49,12 +50,14 @@ func NewNode(isAdmin uint16, hashID string, conn net.Conn, directConnection bool
 
 // CommandHandler 协议数据包，将协议数据包分类写入Buffer
 func (node *Node) CommandHandler(peerNode *Node) {
+	node.AliveCommandHandlerCount++
 	defer peerNode.Disconnect()
 	for {
 		var lowLevelPacket protocol.Packet
 		err := peerNode.ReadLowLevelPacket(&lowLevelPacket)
 		if err != nil {
 			fmt.Println("node disconnect: ", err)
+			node.AliveCommandHandlerCount--
 			return
 		}
 		switch utils.Array32ToUUID(lowLevelPacket.DstHashID) {
