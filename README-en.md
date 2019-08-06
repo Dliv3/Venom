@@ -310,6 +310,7 @@ cd $GOPATH/src/github.com/Dliv3/Venom
 - [ ] support socks5 udp
 - [ ] RESTful API
 - [ ] combined with meterpreter (to be discussed)
+- [ ] turn off socks5 and port forwarding
 
 ## Acknowledgement
 

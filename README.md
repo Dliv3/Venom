@@ -302,6 +302,7 @@ cd $GOPATH/src/github.com/Dliv3/Venom
 - [ ] socks5对udp的支持
 - [ ] 与meterpreter联动 (待定)
 - [ ] RESTful API
+- [ ] 关闭代理与端口转发
 
 ## 致谢
 
