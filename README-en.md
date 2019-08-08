@@ -88,7 +88,7 @@ cd $GOPATH/src/github.com/Dliv3/Venom
   ```
   # Apache under windows environment: 
   # Reuse apache 80 port, does not affect apache to provide normal http service
-  # The value of -h is the local ip, and can't be 0.0.0.0. Otherwise, port reuse cannot be performed.
+  # The value of -lhost is the local ip, and can't be 0.0.0.0. Otherwise, port reuse cannot be performed.
   ./agent.exe -lhost 192.168.204.139 -reuse-port 80
   ```
 

@@ -85,7 +85,7 @@ cd $GOPATH/src/github.com/Dliv3/Venom
   ```
   # 以windows下apache为例
   # 复用apache 80端口，不影响apache提供正常的http服务
-  # -h 的值为本机ip，不能写0.0.0.0，否则无法进行端口复用
+  # -lhost 的值为本机ip，不能写0.0.0.0，否则无法进行端口复用
   ./agent.exe -lhost 192.168.204.139 -reuse-port 80
   ```
 
