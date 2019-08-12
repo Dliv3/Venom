@@ -64,23 +64,41 @@ func ParseArgs() {
 	}
 }
 
-func PrintBanner(data string) {
+func ShowBanner() {
 	if runtime.GOOS == "windows" {
-		fmt.Printf(data)
+		PrintWindowsBanner()
 	} else {
-		fmt.Printf("\x1b[0;34m%s \x1b[0m", data)
+		PrintBanner()
 	}
 	fmt.Println()
 }
 
-func ShowBanner() {
-	PrintBanner(`
-  ____   ____  { v1.1  author: Dlive }
-  \   \ /   /____   ____   ____   _____
-   \   Y   // __ \ /    \ /    \ /     \
-    \     /\  ___/|   |  (  <_> )  Y Y  \
-     \___/  \___  >___|  /\____/|__|_|  /
-                \/     \/             \/
+func PrintWindowsBanner() {
+	fmt.Printf(`
+    ____   ____  { v1.1  author: Dlive }
+    \   \ /   /____   ____   ____   _____
+     \   Y   // __ \ /    \ /    \ /     \
+      \     /\  ___/|   |  (  <_> )  Y Y  \
+       \___/  \___  >___|  /\____/|__|_|  /
+                  \/     \/             \/
+`)
+}
+
+// ShowBanner http://patorjk.com/software/taag/#p=display&h=3&f=Bloody&t=venom
+func PrintBanner() {
+	fmt.Printf("\x1b[0;34m%s \x1b[0m", `
+                                               
+     ██▒   █▓█████ ███▄    █ ▒█████  ███▄ ▄███▓
+    ▓██░   █▓█   ▀ ██ ▀█   █▒██▒  ██▓██▒▀█▀ ██▒
+     ▓██  █▒▒███  ▓██  ▀█ ██▒██░  ██▓██    ▓██░
+      ▒██ █░▒▓█  ▄▓██▒  ▐▌██▒██   ██▒██    ▒██ 
+       ▒▀█░ ░▒████▒██░   ▓██░ ████▓▒▒██▒   ░██▒
+       ░ ▐░ ░░ ▒░ ░ ▒░   ▒ ▒░ ▒░▒░▒░░ ▒░   ░  ░
+       ░ ░░  ░ ░  ░ ░░   ░ ▒░ ░ ▒ ▒░░  ░      ░
+         ░░    ░     ░   ░ ░░ ░ ░ ▒ ░      ░   
+          ░    ░  ░        ░    ░ ░        ░   
+         ░                                     
+               { v1.1 author: Dlive }          
 `)
 }
 
