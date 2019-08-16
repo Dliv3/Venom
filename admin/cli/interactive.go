@@ -6,10 +6,8 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"os/signal"
 	"strconv"
 	"strings"
-	"syscall"
 
 	"github.com/Dliv3/Venom/admin/dispather"
 	"github.com/Dliv3/Venom/node"
@@ -77,21 +75,21 @@ func printEachMap(nodeID string, depth int, printed map[string]bool) {
 // Interactive 交互式控制
 func Interactive() {
 	// 处理ctrl c的SIGINT信号
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT) //, syscall.SIGTERM)
-	shellExit := true
+	// sigs := make(chan os.Signal, 1)
+	// signal.Notify(sigs, syscall.SIGINT) //, syscall.SIGTERM)
+	// shellExit := true
 
-	go func() {
-		for {
-			<-sigs
-			if !shellExit {
-				// ctrl c 处理函数
-				fmt.Println("Ctrl-C")
-			} else {
-				os.Exit(0)
-			}
-		}
-	}()
+	// go func() {
+	// 	for {
+	// 		<-sigs
+	// 		if !shellExit {
+	// 			// ctrl c 处理函数
+	// 			fmt.Println("Ctrl-C")
+	// 		} else {
+	// 			os.Exit(0)
+	// 		}
+	// 	}
+	// }()
 	var nodeID int
 	var peerNode *node.Node
 	// init
@@ -191,9 +189,9 @@ func Interactive() {
 			}
 			utils.HandleWindowsCR()
 			fmt.Println("You can execute commands in this shell :D, 'exit' to exit.")
-			shellExit = false
+			// shellExit = false
 			dispather.SendShellCmd(peerNode)
-			shellExit = true
+			// shellExit = true
 			continue
 		case "upload":
 			if !checkPeerNodeIsSelected() {
