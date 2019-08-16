@@ -19,9 +19,31 @@ import (
 // admin节点想要操作的对端节点的ID，主要用于goto命令
 var currentPeerNodeHashID string
 
-func checkCurrentPeerNode() bool {
-	if currentPeerNodeHashID == "" {
-		fmt.Println("you should select node first")
+// need code refactoring
+func isAdmin() bool {
+	if currentPeerNodeHashID == node.CurrentNode.HashID {
+		return true
+	}
+	return false
+}
+
+// need code refactoring
+// checkPeerNodeIsVaild 检查对端节点是否合法
+func checkPeerNodeIsVaild() bool {
+	if currentPeerNodeHashID == node.CurrentNode.HashID {
+		return true
+	} else if node.Nodes[currentPeerNodeHashID] == nil {
+		fmt.Println("the node is disconnected.")
+		return false
+	}
+	return true
+}
+
+// need code refactoring
+// checkPeerNodeIsSelected 检查是否选择对端节点
+func checkPeerNodeIsSelected() bool {
+	if currentPeerNodeHashID == node.CurrentNode.HashID {
+		fmt.Println("you should choose the node first")
 		return false
 	} else if node.Nodes[currentPeerNodeHashID] == nil {
 		fmt.Println("the node is disconnected.")
@@ -72,8 +94,10 @@ func Interactive() {
 	}()
 	var nodeID int
 	var peerNode *node.Node
+	// init
+	currentPeerNodeHashID = node.CurrentNode.HashID
 	for {
-		if currentPeerNodeHashID == "" {
+		if currentPeerNodeHashID == node.CurrentNode.HashID {
 			fmt.Print("(admin node) >>> ")
 		} else {
 			fmt.Printf("(node %d) >>> ", nodeID)
@@ -87,7 +111,7 @@ func Interactive() {
 			dispather.SendSyncCmd()
 			printNetworkMap()
 		case "setdes":
-			if !checkCurrentPeerNode() {
+			if !checkPeerNodeIsSelected() {
 				break
 			}
 			var description string
@@ -96,15 +120,19 @@ func Interactive() {
 			description = string(descriptionBytes)
 			node.GNodeInfo.NodeDescription[currentPeerNodeHashID] = description
 		case "getdes":
-			if !checkCurrentPeerNode() {
+			if !checkPeerNodeIsSelected() {
 				break
 			}
 			fmt.Println(node.GNodeInfo.NodeDescription[currentPeerNodeHashID])
 		case "goto":
+			// need code refactoring
 			var tmpNodeID int
 			fmt.Scanf("%d", &tmpNodeID)
-			fmt.Println("node", tmpNodeID)
-			if _, ok := node.GNodeInfo.NodeNumber2UUID[tmpNodeID]; ok {
+			if tmpNodeID == 0 {
+				// admin
+				currentPeerNodeHashID = node.CurrentNode.HashID
+				break
+			} else if _, ok := node.GNodeInfo.NodeNumber2UUID[tmpNodeID]; ok {
 				nodeID = tmpNodeID
 			} else {
 				fmt.Println("unknown node id.")
@@ -115,21 +143,21 @@ func Interactive() {
 			// nextNode = node.Nodes[nextNodeID]
 			peerNode = node.Nodes[currentPeerNodeHashID]
 		case "listen":
-			if !checkCurrentPeerNode() {
-				break
-			}
 			var port uint16
 			fmt.Scanf("%d", &port)
-			fmt.Println("listen", port)
+			fmt.Println("listen port", port)
 			if port > 65535 || port < 1 {
 				fmt.Println("port number error.")
 				break
 			}
-			dispather.SendListenCmd(peerNode, port)
-		case "connect":
-			if !checkCurrentPeerNode() {
-				break
+			if checkPeerNodeIsVaild() {
+				if isAdmin() {
+					dispather.BuiltinListenCmd(port)
+				} else {
+					dispather.SendListenCmd(peerNode, port)
+				}
 			}
+		case "connect":
 			var ipString string
 			var port uint16
 			fmt.Scanf("%s %d", &ipString, &port)
@@ -139,9 +167,15 @@ func Interactive() {
 				fmt.Println("invalid ip address.")
 				break
 			}
-			dispather.SendConnectCmd(peerNode, ipString, port)
+			if checkPeerNodeIsVaild() {
+				if isAdmin() {
+					dispather.BuiltinConnectCmd(ipString, port)
+				} else {
+					dispather.SendConnectCmd(peerNode, ipString, port)
+				}
+			}
 		case "socks":
-			if !checkCurrentPeerNode() {
+			if !checkPeerNodeIsSelected() {
 				break
 			}
 			var port uint16
@@ -152,7 +186,7 @@ func Interactive() {
 			}
 			dispather.SendSocks5Cmd(peerNode, port)
 		case "shell":
-			if !checkCurrentPeerNode() {
+			if !checkPeerNodeIsSelected() {
 				break
 			}
 			utils.HandleWindowsCR()
@@ -162,7 +196,7 @@ func Interactive() {
 			shellExit = true
 			continue
 		case "upload":
-			if !checkCurrentPeerNode() {
+			if !checkPeerNodeIsSelected() {
 				break
 			}
 			var localPath string
@@ -172,7 +206,7 @@ func Interactive() {
 			fmt.Println("upload", localPath, fmt.Sprintf("to node %d:", nodeID), remotePath)
 			dispather.SendUploadCmd(peerNode, localPath, remotePath)
 		case "download":
-			if !checkCurrentPeerNode() {
+			if !checkPeerNodeIsSelected() {
 				break
 			}
 			var remotePath string
@@ -181,7 +215,7 @@ func Interactive() {
 			fmt.Println("download", localPath, fmt.Sprintf("from node %d:", nodeID), remotePath)
 			dispather.SendDownloadCmd(peerNode, remotePath, localPath)
 		case "lforward":
-			if !checkCurrentPeerNode() {
+			if !checkPeerNodeIsSelected() {
 				break
 			}
 			var sport uint16
@@ -196,7 +230,7 @@ func Interactive() {
 			fmt.Printf("forward local network %s port %d to remote port %d\n", lhostString, sport, dport)
 			dispather.SendLForwardCmd(peerNode, sport, lhostString, dport)
 		case "rforward":
-			if !checkCurrentPeerNode() {
+			if !checkPeerNodeIsSelected() {
 				break
 			}
 			var sport uint16
@@ -212,9 +246,6 @@ func Interactive() {
 			dispather.SendRForwardCmd(peerNode, rhostString, sport, dport)
 		case "sshconnect":
 			// sshconnect user:password@10.1.1.1:22 9999
-			if !checkCurrentPeerNode() {
-				break
-			}
 			var sshString string
 			var dport uint16
 			fmt.Scanf("%s %d", &sshString, &dport)
@@ -240,27 +271,37 @@ func Interactive() {
 			fmt.Print("use password (1) / ssh key (2)? ")
 			var choice uint16
 			fmt.Scanf("%d", &choice)
-			switch choice {
-			case 1:
-				fmt.Print("password: ")
-				var password string
-				fmt.Scanf("%s", &password)
-				fmt.Printf("connect to target host's %d through ssh tunnel (%s@%s:%d).\n", dport, sshUser, sshHost, sshPort)
-				dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, password)
-			case 2:
-				fmt.Print("file path of ssh key: ")
-				var path string
-				fmt.Scanf("%s", &path)
-				sshKey, err := ioutil.ReadFile(path)
-				if err != nil {
-					fmt.Println("ssh key error:", err)
+			if checkPeerNodeIsVaild() {
+				switch choice {
+				case 1:
+					fmt.Print("password: ")
+					var password string
+					fmt.Scanf("%s", &password)
+					fmt.Printf("connect to target host's %d through ssh tunnel (%s@%s:%d).\n", dport, sshUser, sshHost, sshPort)
+					if isAdmin() {
+						dispather.BuiltinSshConnectCmd(sshUser, sshHost, sshPort, dport, choice, password)
+					} else {
+						dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, password)
+					}
+				case 2:
+					fmt.Print("file path of ssh key: ")
+					var path string
+					fmt.Scanf("%s", &path)
+					sshKey, err := ioutil.ReadFile(path)
+					if err != nil {
+						fmt.Println("ssh key error:", err)
+						break
+					}
+					fmt.Printf("connect to target host's %d through ssh tunnel (%s@%s:%d).\n", dport, sshUser, sshHost, sshPort)
+					if isAdmin() {
+						dispather.BuiltinSshConnectCmd(sshUser, sshHost, sshPort, dport, choice, string(sshKey))
+					} else {
+						dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, string(sshKey))
+					}
+				default:
+					fmt.Println("unknown choice.")
 					break
 				}
-				fmt.Printf("connect to target host's %d through ssh tunnel (%s@%s:%d).\n", dport, sshUser, sshHost, sshPort)
-				dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, string(sshKey))
-			default:
-				fmt.Println("unknown choice.")
-				break
 			}
 		case "exit":
 			os.Exit(0)

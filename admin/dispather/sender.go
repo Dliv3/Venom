@@ -131,9 +131,9 @@ func SendConnectCmd(peerNode *node.Node, ip string, port uint16) {
 	node.CurrentNode.CommandBuffers[protocol.CONNECT].ReadPacket(&packetHeader, &connectPacketRet)
 
 	if connectPacketRet.Success == 1 {
-		fmt.Println("successfully connect to the remote port!")
+		fmt.Println("successfully connect to the remote node!")
 	} else {
-		fmt.Println("failed to connect to the remote port!")
+		fmt.Println("failed to connect to the remote node!")
 		fmt.Println(string(connectPacketRet.Msg))
 	}
 }
