@@ -33,7 +33,7 @@ func main() {
 			"connect",
 			fmt.Sprintf("%s:%d", cli.Args.RemoteIP, uint16(cli.Args.RemotePort)),
 			dispather.AdminClient, false, 0)
-	} else {
+	} else if cli.Args.Mode == cli.LISTEN_MODE {
 		netio.InitNode(
 			"listen",
 			fmt.Sprintf("0.0.0.0:%d", uint16(cli.Args.LocalPort)),

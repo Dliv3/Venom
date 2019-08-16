@@ -10,6 +10,7 @@ import (
 // COMMAND LINE INTERFACE
 
 const (
+	NORMAL_MODE  = 0
 	LISTEN_MODE  = 1
 	CONNECT_MODE = 2
 )
@@ -39,6 +40,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, `Venom version: 1.1
 
 Usage:
+	$ ./venom_admin
 	$ ./venom_admin -lport [port]
 	$ ./venom_admin -rhost [ip] -rport [port]
 
@@ -54,14 +56,23 @@ func ParseArgs() {
 	if Args.LocalPort == 0 && Args.RemoteIP != "" && Args.RemotePort != 0 {
 		// connect to remote port
 		Args.Mode = CONNECT_MODE
-	} else if Args.LocalPort != 0 && Args.RemoteIP == "" && Args.RemotePort == 0 {
+		return
+	}
+
+	if Args.LocalPort != 0 && Args.RemoteIP == "" && Args.RemotePort == 0 {
 		// listen a local port
 		Args.Mode = LISTEN_MODE
-	} else {
-		// error
-		flag.Usage()
-		os.Exit(0)
+		return
 	}
+
+	if Args.RemoteIP == "" && Args.RemotePort == 0 && Args.LocalPort == 0 {
+		Args.Mode = NORMAL_MODE
+		return
+	}
+
+	// error
+	flag.Usage()
+	os.Exit(0)
 }
 
 func ShowBanner() {
