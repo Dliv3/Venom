@@ -50,8 +50,9 @@ func InitTCP(tcpType string, tcpService string, peerNodeID string, handlerFunc f
 				c <- true
 				conn, err := listener.Accept()
 				if err != nil {
-					log.Println("[-]Accept error:", err)
-					continue
+					log.Println("[-]listener.Accept error:", err)
+					// continue
+					break
 				}
 				go handlerFunc(conn, peerNodeID, c, args)
 			}

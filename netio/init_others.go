@@ -64,8 +64,9 @@ func InitNode(tcpType string, tcpService string, handlerFunc func(net.Conn), por
 			for {
 				conn, err := listener.Accept()
 				if err != nil {
-					log.Println("[-]Accept error:", err)
-					continue
+					log.Println("[-]listener.Accept error:", err)
+					// continue
+					break
 				}
 
 				if portReuse {
