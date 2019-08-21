@@ -183,7 +183,8 @@ func SendDownloadCmd(peerNode *node.Node, remotePath string, localPath string) b
 	}
 
 	if downloadPacketRet.FileLen > 1024*1024*100 {
-		fmt.Print("this file is too large (>100M), do you still want to download it? (y/n) ")
+		fmt.Printf("this file is too large (%s), do you still want to download it? (y/n) ",
+			utils.GetFileSizeDescription(downloadPacketRet.FileLen))
 		var choise string
 		fmt.Scanf("%s", &choise)
 		if choise != "y" {
@@ -265,7 +266,8 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 	// 如果文件过大，提醒用户选择是否继续上次（过大的文件会影响其他命令数据的传输效率）
 	var fileSize = utils.GetFileSize(localPath)
 	if fileSize > 1024*1024*100 {
-		fmt.Print("this file is too large(>100M), do you still want to upload it? (y/n) ")
+		fmt.Printf("this file is too large (%s), do you still want to upload it? (y/n) ",
+			utils.GetFileSizeDescription(uint64(fileSize)))
 		var choise string
 		fmt.Scanf("%s", &choise)
 		if choise != "y" {

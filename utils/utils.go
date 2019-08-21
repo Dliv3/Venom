@@ -140,6 +140,21 @@ func GetFileSize(path string) int64 {
 	return fileSize
 }
 
+// GetFileSizeDescription 10.00G / 100.00M
+func GetFileSizeDescription(fileSize uint64) string {
+	fileSizeFloat := float64(fileSize)
+	const K = 1024 * 1.0
+	const M = K * 1024
+	const G = M * 1024
+	if fileSizeFloat >= G {
+		return fmt.Sprintf("%0.2fG", fileSizeFloat/G)
+	}
+	if fileSizeFloat >= M {
+		return fmt.Sprintf("%0.2fM", fileSizeFloat/M)
+	}
+	return fmt.Sprintf("%0.2fK", fileSizeFloat/K)
+}
+
 /* -------------- Calculate structure size ----------------- */
 func PacketSize(packet interface{}) (uint64, error) {
 
