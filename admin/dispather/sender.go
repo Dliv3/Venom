@@ -255,6 +255,12 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 		fmt.Println("local file does not exists")
 		return false
 	}
+
+	if utils.IsDir(localPath) {
+		fmt.Println("local file cannot be a folder")
+		return false
+	}
+
 	localFile, err := os.Open(localPath)
 	if err != nil {
 		fmt.Println(err)

@@ -130,6 +130,15 @@ func FileExists(filename string) bool {
 	return exist
 }
 
+// IsDir check if path is dir
+func IsDir(path string) bool {
+	s, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return s.IsDir()
+}
+
 // GetFileSize Get the size of a single file
 func GetFileSize(path string) int64 {
 	fileInfo, err := os.Stat(path)

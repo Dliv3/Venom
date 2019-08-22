@@ -22,6 +22,7 @@ var ERR_PROTOCOL_SEPARATOR = errors.New("unknown separator")
 var ERR_TARGET_NODE = errors.New("can not find target node")
 var ERR_FILE_EXISTS = errors.New("remote file already exists")
 var ERR_FILE_NOT_EXISTS = errors.New("remote file not exists")
+var ERR_PATH_IS_DIR = errors.New("remote file cannot be a folder")
 
 // AgentClient Admin节点作为Client
 func AgentClient(conn net.Conn) {
@@ -220,9 +221,7 @@ func handleDownloadCmd() {
 		var downloadPacketCmd protocol.DownloadPacketCmd
 
 		node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&packetHeader, &downloadPacketCmd)
-
 		adminNode := node.Nodes[utils.Array32ToUUID(packetHeader.SrcHashID)]
-
 		filePath := string(downloadPacketCmd.Path)
 
 		var downloadPacketRet protocol.DownloadPacketRet
@@ -230,16 +229,21 @@ func handleDownloadCmd() {
 		var fileSize int64
 		// 如果文件存在，则下载
 		if utils.FileExists(filePath) {
-			var err error
-			file, err = os.Open(filePath)
-			if err != nil {
-				downloadPacketRet.Success = 0
-				downloadPacketRet.Msg = []byte(fmt.Sprintf("%s", err))
+			if !utils.IsDir(filePath) {
+				var err error
+				file, err = os.Open(filePath)
+				if err != nil {
+					downloadPacketRet.Success = 0
+					downloadPacketRet.Msg = []byte(fmt.Sprintf("%s", err))
+				} else {
+					defer file.Close()
+					downloadPacketRet.Success = 1
+					fileSize = utils.GetFileSize(filePath)
+					downloadPacketRet.FileLen = uint64(fileSize)
+				}
 			} else {
-				defer file.Close()
-				downloadPacketRet.Success = 1
-				fileSize = utils.GetFileSize(filePath)
-				downloadPacketRet.FileLen = uint64(fileSize)
+				downloadPacketRet.Success = 0
+				downloadPacketRet.Msg = []byte(fmt.Sprintf("%s", ERR_PATH_IS_DIR))
 			}
 		} else {
 			downloadPacketRet.Success = 0
