@@ -363,7 +363,7 @@ func handleUploadCmd() {
 		loop := int64(uploadPacketCmd.FileLen / dataBlockSize)
 		remainder := uploadPacketCmd.FileLen % dataBlockSize
 		for loop >= 0 {
-			if remainder != 0 {
+			if loop != 0 || (loop == 0  && remainder != 0) {
 				var fileDataPacket protocol.FileDataPacket
 				var packetHeaderRet protocol.PacketHeader
 				node.CurrentNode.CommandBuffers[protocol.UPLOAD].ReadPacket(&packetHeaderRet, &fileDataPacket)

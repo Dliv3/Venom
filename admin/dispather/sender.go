@@ -12,7 +12,7 @@ import (
 	"github.com/Dliv3/Venom/node"
 	"github.com/Dliv3/Venom/protocol"
 	"github.com/Dliv3/Venom/utils"
-	"github.com/cheggaaa/pb"
+	"github.com/cheggaaa/pb/v3"
 )
 
 // SendSyncCmd 发送同步网络拓扑的命令
@@ -216,24 +216,14 @@ func SendDownloadCmd(peerNode *node.Node, remotePath string, localPath string) b
 
 	// 进度条功能
 	bar := pb.New64(int64(downloadPacketRet.FileLen))
-
-	// show percents (by default already true)
-	bar.ShowPercent = true
-
-	// show bar (by default already true)
-	bar.ShowBar = true
-
-	bar.ShowCounters = true
-
-	bar.ShowTimeLeft = true
-
-	bar.SetUnits(pb.U_BYTES)
+	bar.SetTemplate(pb.Full)
+	bar.Set(pb.Bytes, true)
 
 	// and start
 	bar.Start()
 
 	for ; loop >= 0; loop-- {
-		if remainder != 0 {
+		if loop != 0 || (loop == 0 && remainder != 0) {
 			var fileDataPacket protocol.FileDataPacket
 			node.CurrentNode.CommandBuffers[protocol.DOWNLOAD].ReadPacket(&packetHeader, &fileDataPacket)
 			_, err = localFile.Write(fileDataPacket.Data)
@@ -319,18 +309,8 @@ func SendUploadCmd(peerNode *node.Node, localPath string, remotePath string) boo
 
 	// 进度条功能
 	bar := pb.New64(fileSize)
-
-	// show percents (by default already true)
-	bar.ShowPercent = true
-
-	// show bar (by default already true)
-	bar.ShowBar = true
-
-	bar.ShowCounters = true
-
-	bar.ShowTimeLeft = true
-
-	bar.SetUnits(pb.U_BYTES)
+	bar.SetTemplate(pb.Full)
+	bar.Set(pb.Bytes, true)
 
 	// and start
 	bar.Start()
