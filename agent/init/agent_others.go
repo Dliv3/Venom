@@ -34,8 +34,5 @@ func InitNode() {
 			dispather.AgentClient, false, 0)
 	}
 
-	var exit string
-	for exit != "exit" {
-		fmt.Scanln(&exit)
-	}
+	select {}
 }
