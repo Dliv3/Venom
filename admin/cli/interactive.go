@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -12,6 +11,8 @@ import (
 	"github.com/Dliv3/Venom/admin/dispather"
 	"github.com/Dliv3/Venom/node"
 	"github.com/Dliv3/Venom/utils"
+
+	"github.com/mattn/go-tty"
 )
 
 // admin节点想要操作的对端节点的ID，主要用于goto命令
@@ -94,15 +95,35 @@ func Interactive() {
 	var peerNode *node.Node
 	// init
 	currentPeerNodeHashID = node.CurrentNode.HashID
+
+	t, err := tty.Open()
+
+	if err != nil {
+		fmt.Println("Failed to open tty")
+		os.Exit(-1)
+	}
+	defer t.Close()
+
 	for {
+		var header string
+
 		if currentPeerNodeHashID == node.CurrentNode.HashID {
-			fmt.Print("(admin node) >>> ")
+			header = "(admin node) >>> "
 		} else {
-			fmt.Printf("(node %d) >>> ", nodeID)
+			header = fmt.Sprintf("(node %d) >>> ", nodeID)
 		}
-		var cmdStr string
-		fmt.Scanf("%s", &cmdStr)
-		switch cmdStr {
+		var line string
+		if line, err = utils.ReadLine(t, header); err != nil {
+			continue
+		}
+
+		cmdStr := strings.Split(line, " ")
+		if len(cmdStr) == 0 {
+			fmt.Println("Unknown command")
+			continue
+		}
+
+		switch cmdStr[0] {
 		case "help":
 			ShowUsage()
 		case "show":
@@ -112,10 +133,14 @@ func Interactive() {
 			if !checkPeerNodeIsSelected() {
 				break
 			}
+
+			if len(cmdStr) == 1 {
+				fmt.Println("setdes [info]")
+				continue
+			}
+
 			var description string
-			reader := bufio.NewReader(os.Stdin)
-			descriptionBytes, _, _ := reader.ReadLine()
-			description = string(descriptionBytes)
+			description = strings.Join(cmdStr[1:], " ")
 			node.GNodeInfo.NodeDescription[currentPeerNodeHashID] = description
 		case "getdes":
 			if !checkPeerNodeIsSelected() {
@@ -123,9 +148,17 @@ func Interactive() {
 			}
 			fmt.Println(node.GNodeInfo.NodeDescription[currentPeerNodeHashID])
 		case "goto":
-			// need code refactoring
+			if len(cmdStr) != 2 {
+				fmt.Println("goto [id]")
+				continue
+			}
+
 			var tmpNodeID int
-			fmt.Scanf("%d", &tmpNodeID)
+			if tmpNodeID, err = strconv.Atoi(cmdStr[1]); err != nil {
+				fmt.Printf("Bad nodeid %s\n", cmdStr[1])
+				continue
+			}
+
 			if tmpNodeID == 0 {
 				// admin
 				currentPeerNodeHashID = node.CurrentNode.HashID
@@ -141,8 +174,20 @@ func Interactive() {
 			// nextNode = node.Nodes[nextNodeID]
 			peerNode = node.Nodes[currentPeerNodeHashID]
 		case "listen":
+			if len(cmdStr) != 2 {
+				fmt.Println("listen [lport]")
+				continue
+			}
+
 			var port uint16
-			fmt.Scanf("%d", &port)
+			var value uint64
+
+			if value, err = strconv.ParseUint(cmdStr[1], 10, 16); err != nil {
+				fmt.Printf("Bad port %s\n", cmdStr[1])
+				continue
+			}
+			port = uint16(value)
+
 			fmt.Println("listen port", port)
 			if port > 65535 || port < 1 {
 				fmt.Println("port number error.")
@@ -156,10 +201,22 @@ func Interactive() {
 				}
 			}
 		case "connect":
+			if len(cmdStr) != 3 {
+				fmt.Println("connect [rhost] [rport]")
+				continue
+			}
+
 			var ipString string
 			var port uint16
-			fmt.Scanf("%s %d", &ipString, &port)
-			fmt.Println("connect to", ipString, port)
+			var value uint64
+
+			ipString = cmdStr[1]
+			if value, err = strconv.ParseUint(cmdStr[2], 10, 16); err != nil {
+				fmt.Printf("Bad port %s\n", cmdStr[1])
+				continue
+			}
+			port = uint16(value)
+
 			ip := net.ParseIP(ipString)
 			if ip == nil {
 				fmt.Println("invalid ip address.")
@@ -176,8 +233,21 @@ func Interactive() {
 			if !checkPeerNodeIsSelected() {
 				break
 			}
+
+			if len(cmdStr) != 2 {
+				fmt.Println("socks [lport]")
+				continue
+			}
+
 			var port uint16
-			fmt.Scanf("%d", &port)
+			var value uint64
+
+			if value, err = strconv.ParseUint(cmdStr[1], 10, 16); err != nil {
+				fmt.Printf("Bad port %s\n", cmdStr[1])
+				continue
+			}
+			port = uint16(value)
+
 			if port > 65535 || port < 1 {
 				fmt.Println("port number error.")
 				break
@@ -197,29 +267,64 @@ func Interactive() {
 			if !checkPeerNodeIsSelected() {
 				break
 			}
+
+			if len(cmdStr) != 3 {
+				fmt.Println("upload [local_file] [remote_file]")
+				continue
+			}
+
 			var localPath string
 			var remotePath string
 
-			fmt.Scanf("%s %s", &localPath, &remotePath)
+			localPath = cmdStr[1]
+			remotePath = cmdStr[2]
 			fmt.Println("upload", localPath, fmt.Sprintf("to node %d:", nodeID), remotePath)
 			dispather.SendUploadCmd(peerNode, localPath, remotePath)
 		case "download":
 			if !checkPeerNodeIsSelected() {
 				break
 			}
+
+			if len(cmdStr) != 3 {
+				fmt.Println("upload [local_file] [remote_file]")
+				continue
+			}
+
 			var remotePath string
 			var localPath string
-			fmt.Scanf("%s %s", &remotePath, &localPath)
+
+			remotePath = cmdStr[1]
+			localPath = cmdStr[2]
 			fmt.Println("download", localPath, fmt.Sprintf("from node %d:", nodeID), remotePath)
 			dispather.SendDownloadCmd(peerNode, remotePath, localPath)
 		case "lforward":
 			if !checkPeerNodeIsSelected() {
 				break
 			}
+
+			if len(cmdStr) != 4 {
+				fmt.Println("lforward [lhost] [sport] [dport]")
+				continue
+			}
+
 			var sport uint16
 			var dport uint16
 			var lhostString string
-			fmt.Scanf("%s %d %d", &lhostString, &sport, &dport)
+			var value uint64
+
+			if value, err = strconv.ParseUint(cmdStr[1], 10, 16); err != nil {
+				fmt.Printf("Bad sport %s\n", cmdStr[1])
+				continue
+			}
+			sport = uint16(value)
+
+			if value, err = strconv.ParseUint(cmdStr[2], 10, 16); err != nil {
+				fmt.Printf("Bad dport %s\n", cmdStr[2])
+				continue
+			}
+			dport = uint16(value)
+
+			lhostString = cmdStr[3]
 			lhost := net.ParseIP(lhostString)
 			if lhost == nil {
 				fmt.Println("invalid ip address.")
@@ -231,10 +336,30 @@ func Interactive() {
 			if !checkPeerNodeIsSelected() {
 				break
 			}
+
+			if len(cmdStr) != 4 {
+				fmt.Println("rforward [rhost] [sport] [dport]")
+				continue
+			}
+
 			var sport uint16
 			var dport uint16
 			var rhostString string
-			fmt.Scanf("%s %d %d", &rhostString, &sport, &dport)
+			var value uint64
+
+			rhostString = cmdStr[1]
+			if value, err = strconv.ParseUint(cmdStr[2], 10, 16); err != nil {
+				fmt.Printf("Bad sport %s\n", cmdStr[2])
+				continue
+			}
+			sport = uint16(value)
+
+			if value, err = strconv.ParseUint(cmdStr[3], 10, 16); err != nil {
+				fmt.Printf("Bad dport %s\n", cmdStr[3])
+				continue
+			}
+			dport = uint16(value)
+
 			rhost := net.ParseIP(rhostString)
 			if rhost == nil {
 				fmt.Println("invalid ip address.")
@@ -244,9 +369,23 @@ func Interactive() {
 			dispather.SendRForwardCmd(peerNode, rhostString, sport, dport)
 		case "sshconnect":
 			// sshconnect user:password@10.1.1.1:22 9999
+			if len(cmdStr) != 3 {
+				fmt.Println("sshconnect [user@ip:port] [dport]")
+				continue
+			}
+
 			var sshString string
 			var dport uint16
-			fmt.Scanf("%s %d", &sshString, &dport)
+			var value uint64
+
+			sshString = cmdStr[1]
+
+			if value, err = strconv.ParseUint(cmdStr[2], 10, 16); err != nil {
+				fmt.Printf("Bad dport %s\n", cmdStr[2])
+				continue
+			}
+			dport = uint16(value)
+
 			var sshUser string
 			var sshHost string
 			var sshPort uint16
@@ -267,14 +406,32 @@ func Interactive() {
 				break
 			}
 			fmt.Print("use password (1) / ssh key (2)? ")
+
+			var choice_s string
 			var choice uint16
-			fmt.Scanf("%d", &choice)
+
+			if choice_s, err = t.ReadString(); err != nil {
+				fmt.Println("Error to read choice")
+				continue
+			}
+
+			if value, err = strconv.ParseUint(choice_s, 10, 16); err != nil {
+				fmt.Printf("Bad choice %s\n", choice_s)
+				continue
+			}
+			choice = uint16(value)
+
 			if checkPeerNodeIsVaild() {
 				switch choice {
 				case 1:
 					fmt.Print("password: ")
 					var password string
-					fmt.Scanf("%s", &password)
+
+					if password, err = t.ReadString(); err != nil {
+						fmt.Println("Error to read password")
+						continue
+					}
+
 					fmt.Printf("connect to target host's %d through ssh tunnel (%s@%s:%d).\n", dport, sshUser, sshHost, sshPort)
 					if isAdmin() {
 						dispather.BuiltinSshConnectCmd(sshUser, sshHost, sshPort, dport, choice, password)
@@ -284,7 +441,10 @@ func Interactive() {
 				case 2:
 					fmt.Print("file path of ssh key: ")
 					var path string
-					fmt.Scanf("%s", &path)
+					if path, err = t.ReadString(); err != nil {
+						fmt.Println("Error to read path")
+						continue
+					}
 					sshKey, err := ioutil.ReadFile(path)
 					if err != nil {
 						fmt.Println("ssh key error:", err)
@@ -297,16 +457,17 @@ func Interactive() {
 						dispather.SendSshConnectCmd(peerNode, sshUser, sshHost, sshPort, dport, choice, string(sshKey))
 					}
 				default:
-					fmt.Println("unknown choice.")
+					fmt.Println("Unknown choice.")
 					break
 				}
 			}
 		case "exit":
+			t.Close()
 			os.Exit(0)
 		case "":
 			continue
 		default:
-			fmt.Println("unknown command, use \"help\" to see all commands.")
+			fmt.Printf("Unknown command %s, use \"help\" to see all commands.\n", cmdStr[0])
 		}
 		utils.HandleWindowsCR()
 	}
