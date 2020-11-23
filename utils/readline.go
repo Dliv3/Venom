@@ -169,7 +169,7 @@ loop:
 				}
 				switch r {
 				case 'A': // arrow up
-					if history_index == len(history) {
+					if history_index == len(history) && history_index >= 2 {
 						history_index -= 2 // jump over last blank padding string
 					} else if history_index > 0 {
 						history_index -= 1
@@ -250,6 +250,5 @@ loop:
 		history[len(history)-1] = inputstr
 		history = append(history, "")
 	}
-	fmt.Printf("history count %d\n", len(history))
 	return inputstr, nil
 }
