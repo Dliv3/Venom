@@ -12,6 +12,8 @@ import (
 	"github.com/mattn/go-tty"
 )
 
+var history []string = []string{""}
+
 type ctx struct {
 	w        io.Writer
 	input    []rune
@@ -112,6 +114,7 @@ func ReadLine(tty *tty.TTY, msg string) (string, error) {
 	baseSize := len(c.input)
 	c.cursor_x = baseSize
 	dirty := true
+	history_index := len(history)
 loop:
 	for !quit {
 		err := c.redraw(dirty, 0)
@@ -165,11 +168,28 @@ loop:
 					panic(err)
 				}
 				switch r {
-				case 'C':
+				case 'A': // arrow up
+					if history_index == len(history) {
+						history_index -= 2 // jump over last blank padding string
+					} else if history_index > 0 {
+						history_index -= 1
+					}
+					c.input = append([]rune(msg), []rune(history[history_index])...)
+					c.cursor_x = len(c.input)
+					dirty = true
+				case 'B': // arrow down
+					history_index = history_index + 1
+					if history_index > len(history)-1 {
+						history_index = len(history) - 1
+					}
+					c.input = append([]rune(msg), []rune(history[history_index])...)
+					c.cursor_x = len(c.input)
+					dirty = true
+				case 'C': // arrow right
 					if c.cursor_x < len(c.input) {
 						c.cursor_x++
 					}
-				case 'D':
+				case 'D': // arrow left
 					if c.cursor_x > baseSize {
 						c.cursor_x--
 					}
@@ -218,5 +238,18 @@ loop:
 		return "", io.EOF
 	}
 
-	return string(c.input[baseSize:]), nil
+	inputstr := string(c.input[baseSize:])
+	if len(inputstr) == 0 {
+		return "", nil
+	}
+
+	if len(history) == 1 {
+		history[0] = inputstr
+		history = append(history, "")
+	} else if inputstr != history[len(history)-2] {
+		history[len(history)-1] = inputstr
+		history = append(history, "")
+	}
+	fmt.Printf("history count %d\n", len(history))
+	return inputstr, nil
 }
