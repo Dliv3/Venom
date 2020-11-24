@@ -469,6 +469,6 @@ func Interactive() {
 		default:
 			fmt.Printf("Unknown command %s, use \"help\" to see all commands.\n", cmdStr[0])
 		}
-		utils.HandleWindowsCR()
+		// utils.HandleWindowsCR()
 	}
 }
