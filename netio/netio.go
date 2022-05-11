@@ -28,43 +28,35 @@ func WritePacket(output io.Writer, packet interface{}) error {
 		// type switch
 		switch value := val.(type) {
 		case uint16:
-			_, err := Write(output, utils.Uint16ToBytes(value))
-			if err != nil {
+			if _, err := Write(output, utils.Uint16ToBytes(value)); err != nil {
 				return err
 			}
 		case uint32:
-			_, err := Write(output, utils.Uint32ToBytes(value))
-			if err != nil {
+			if _, err := Write(output, utils.Uint32ToBytes(value)); err != nil {
 				return err
 			}
 		case uint64:
-			_, err := Write(output, utils.Uint64ToBytes(value))
-			if err != nil {
+			if _, err := Write(output, utils.Uint64ToBytes(value)); err != nil {
 				return err
 			}
 		case string:
-			_, err := Write(output, []byte(value))
-			if err != nil {
+			if _, err := Write(output, []byte(value)); err != nil {
 				return err
 			}
 		case []byte:
-			_, err := Write(output, value)
-			if err != nil {
+			if _, err := Write(output, value); err != nil {
 				return err
 			}
 		case [2]byte:
-			_, err := Write(output, value[0:])
-			if err != nil {
+			if _, err := Write(output, value[0:]); err != nil {
 				return err
 			}
 		case [4]byte:
-			_, err := Write(output, value[0:])
-			if err != nil {
+			if _, err := Write(output, value[0:]); err != nil {
 				return err
 			}
 		case [32]byte:
-			_, err := Write(output, value[0:])
-			if err != nil {
+			if _, err := Write(output, value[0:]); err != nil {
 				return err
 			}
 		default:
@@ -108,22 +100,19 @@ func ReadPacket(input io.Reader, packet interface{}) error {
 			}
 		case uint16:
 			var buf [2]byte
-			_, err := Read(input, buf[0:])
-			if err != nil {
+			if _, err := Read(input, buf[0:]); err != nil {
 				return err
 			}
 			f.SetUint(uint64(utils.BytesToUint16(buf[0:])))
 		case uint32:
 			var buf [4]byte
-			_, err := Read(input, buf[0:])
-			if err != nil {
+			if _, err := Read(input, buf[0:]); err != nil {
 				return err
 			}
 			f.SetUint(uint64(utils.BytesToUint32(buf[0:])))
 		case uint64:
 			var buf [8]byte
-			_, err := Read(input, buf[0:])
-			if err != nil {
+			if _, err := Read(input, buf[0:]); err != nil {
 				return err
 			}
 			f.SetUint(uint64(utils.BytesToUint64(buf[0:])))
@@ -148,30 +137,28 @@ func ReadPacket(input io.Reader, packet interface{}) error {
 					return nil
 				}
 				buf := make([]byte, length)
-				_, err := Read(input, buf[0:])
-				if err != nil {
+				if _, err := Read(input, buf[0:]); err != nil {
 					return err
 				}
+
 				f.SetBytes(buf)
 			}
 		case [2]byte:
 			var buf [2]byte
-			_, err := Read(input, buf[0:])
-			if err != nil {
+			if _, err := Read(input, buf[0:]); err != nil {
 				return err
 			}
 			f.Set(reflect.ValueOf(buf))
 		case [4]byte:
 			var buf [4]byte
-			_, err := Read(input, buf[0:])
-			if err != nil {
+			if _, err := Read(input, buf[0:]); err != nil {
 				return err
 			}
+
 			f.Set(reflect.ValueOf(buf))
 		case [32]byte:
 			var buf [32]byte
-			_, err := Read(input, buf[0:])
-			if err != nil {
+			if _, err := Read(input, buf[0:]); err != nil {
 				return err
 			}
 			// 使用reflect给array类型赋值的方法
@@ -208,8 +195,7 @@ func readUntilSeparator(input io.Reader, separator string) (string, error) {
 	i := 0
 	var one [1]byte
 	for {
-		_, err := Read(input, one[0:])
-		if err != nil {
+		if _, err := Read(input, one[0:]); err != nil {
 			return "", err
 		}
 		if kmp.Pattern[i] == one[0] {
